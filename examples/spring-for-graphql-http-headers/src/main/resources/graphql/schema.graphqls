@@ -1,0 +1,22 @@
+type Query {
+    tasks: [TaskDto!]!
+}
+
+type Mutation {
+    addTask(payload: TaskInput): TaskDto!
+    updateTask(taskId: ID!, payload: TaskInput): TaskDto!
+    completeTask(taskId: ID!): TaskDto!
+    deleteTask(taskId: ID!): Boolean!
+}
+
+type TaskDto {
+    id: ID!
+    title: String!
+    description: String,
+    completed: Boolean!
+}
+
+input TaskInput {
+    title: String!,
+    description: String
+}
