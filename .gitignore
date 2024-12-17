@@ -8,6 +8,5 @@
 /dataSources.local.xml
 /.idea
 .gradle
-gradle/wrapper/gradle-wrapper.jar
 **/build/
 .DS_Store
