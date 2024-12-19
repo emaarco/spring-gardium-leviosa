@@ -13,8 +13,6 @@ The example showcases how to:
 
 By modifying the configuration, you can easily change the locations from which fragments are loaded.
 
----
-
 ## 🔧 Configuration Overview
 
 The custom configuration is defined in the `GraphQlTestConfiguration` file:
@@ -51,8 +49,6 @@ class GraphQlTestConfiguration {
 To change the fragment locations, update the `resources` list in the `documentSource()` method with the desired folder
 paths.
 
----
-
 ## ✅ Test Example
 
 The test case demonstrates how the custom configuration resolves fragments from the specified locations:
@@ -70,17 +66,27 @@ class LoadTasksControllerTest {
 
     @Test
     fun `load all tasks`() {
+
+        val firstTaskID = UUID.randomUUID()
+        val secondTaskID = UUID.randomUUID()
+
         every { query.loadTasks() } returns listOf(
-            buildTask(UUID.randomUUID(), "Task 1", "Description 1", false),
-            buildTask(UUID.randomUUID(), "Task 2", "Description 2", true)
+            buildTask(firstTaskID, "Task 1", "Description 1", false),
+            buildTask(secondTaskID, "Task 2", "Description 2", true),
         )
 
         graphQlTester.documentName("tasks")
-            .fragmentName("task.fragments") // Uses fragments from configured locations
+            .fragmentName("task.fragments")
             .execute()
             .path("tasks")
             .entityList(TaskDto::class.java)
-            .hasSize(2)
+            .containsExactly(
+                buildTaskDto(firstTaskID.toString(), "Task 1", "Description 1", false),
+                buildTaskDto(secondTaskID.toString(), "Task 2", "Description 2", true)
+            )
+
+        verify { query.loadTasks() }
+        confirmVerified(query)
     }
 }
 ```
