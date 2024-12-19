@@ -1,0 +1,6 @@
+fragment TaskFragment on TaskDto {
+    id
+    title
+    description
+    completed
+}
