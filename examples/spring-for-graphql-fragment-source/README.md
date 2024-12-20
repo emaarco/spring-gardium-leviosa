@@ -23,7 +23,7 @@ class GraphQlTestConfiguration {
 
     @Bean
     @Primary
-    fun graphQlTester(
+    fun customGraphQlTester(
         executionGraphQlTester: ExecutionGraphQlService,
     ): GraphQlTester {
         val customDocumentSource = documentSource()
