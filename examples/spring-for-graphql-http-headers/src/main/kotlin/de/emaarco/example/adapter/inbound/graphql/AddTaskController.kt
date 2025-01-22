@@ -11,7 +11,9 @@ import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.stereotype.Controller
 
 @Controller
-class AddTaskController(private val useCase: AddTaskUseCase) {
+class AddTaskController(
+    private val useCase: AddTaskUseCase,
+) {
 
     private val log = KotlinLogging.logger {}
 

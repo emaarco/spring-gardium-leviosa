@@ -7,7 +7,9 @@ import org.springframework.graphql.data.method.annotation.QueryMapping
 import org.springframework.stereotype.Controller
 
 @Controller
-class LoadTasksController(private val query: LoadTasksQuery) {
+class LoadTasksController(
+    private val query: LoadTasksQuery,
+) {
 
     private val log = KotlinLogging.logger {}
 

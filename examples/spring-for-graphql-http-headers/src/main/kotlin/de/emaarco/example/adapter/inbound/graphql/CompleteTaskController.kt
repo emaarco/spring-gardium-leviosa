@@ -10,7 +10,9 @@ import org.springframework.stereotype.Controller
 import java.util.*
 
 @Controller
-class CompleteTaskController(private val useCase: CompleteTaskUseCase) {
+class CompleteTaskController(
+    private val useCase: CompleteTaskUseCase,
+) {
 
     private val log = KotlinLogging.logger {}
 

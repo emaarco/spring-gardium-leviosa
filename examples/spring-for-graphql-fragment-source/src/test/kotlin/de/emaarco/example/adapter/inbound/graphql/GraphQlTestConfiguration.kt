@@ -19,7 +19,8 @@ class GraphQlTestConfiguration {
     @Primary
     fun customGraphQlTester(executionGraphQlTester: ExecutionGraphQlService): GraphQlTester {
         val customDocumentSource = documentSource()
-        return ExecutionGraphQlServiceTester.builder(executionGraphQlTester)
+        return ExecutionGraphQlServiceTester
+            .builder(executionGraphQlTester)
             .documentSource(customDocumentSource)
             .encoder(Jackson2JsonEncoder())
             .decoder(Jackson2JsonDecoder())

@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/tasks")
-class AddTaskRestController(private val useCase: AddTaskUseCase) {
+class AddTaskRestController(
+    private val useCase: AddTaskUseCase,
+) {
 
     private val log = KotlinLogging.logger {}
 

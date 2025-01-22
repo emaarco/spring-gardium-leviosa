@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component
  * Inserts test-tasks into the in-memory repository post startup.
  */
 @Component
-class TaskDataSink(private val useCase: AddTaskUseCase) {
+class TaskDataSink(
+    private val useCase: AddTaskUseCase,
+) {
 
     private val log = KotlinLogging.logger {}
 

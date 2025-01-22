@@ -10,13 +10,9 @@ class TaskPersistenceAdapter : TaskRepository {
 
     private val tasks: MutableMap<TaskId, Task> = mutableMapOf()
 
-    override fun load(): List<Task> {
-        return tasks.values.toList()
-    }
+    override fun load(): List<Task> = tasks.values.toList()
 
-    override fun search(taskId: TaskId): Task? {
-        return tasks[taskId]
-    }
+    override fun search(taskId: TaskId): Task? = tasks[taskId]
 
     override fun save(task: Task) {
         tasks[task.id] = task
