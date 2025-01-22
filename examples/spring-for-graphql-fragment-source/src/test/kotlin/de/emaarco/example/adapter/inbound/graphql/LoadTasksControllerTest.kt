@@ -35,7 +35,8 @@ class LoadTasksControllerTest {
                 buildTask(secondTaskID, "Task 2", "Description 2", true),
             )
 
-        graphQlTester.documentName("tasks")
+        graphQlTester
+            .documentName("tasks")
             .fragmentName("task.fragments")
             .execute()
             .path("tasks")

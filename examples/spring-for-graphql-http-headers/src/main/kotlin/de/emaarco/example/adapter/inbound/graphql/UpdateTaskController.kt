@@ -11,7 +11,9 @@ import org.springframework.stereotype.Controller
 import java.util.*
 
 @Controller
-class UpdateTaskController(private val useCase: UpdateTaskUseCase) {
+class UpdateTaskController(
+    private val useCase: UpdateTaskUseCase,
+) {
 
     private val log = KotlinLogging.logger {}
 

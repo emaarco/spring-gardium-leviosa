@@ -16,6 +16,15 @@ allprojects {
     repositories {
         mavenCentral()
     }
+
+    /**
+     * Disables task that due to the current library versions are not working (but also not required)
+     * Please check them regularly to see if they can be enabled again
+     */
+    val disabledTasks = arrayOf("runKtlintCheckOverKotlinScripts", "runKtlintFormatOverKotlinScripts")
+    tasks.matching { it.name in disabledTasks }.configureEach {
+        enabled = false
+    }
 }
 
 tasks.getByName<Jar>("jar") {
@@ -43,6 +52,7 @@ subprojects {
     ktlint {
         debug.set(true)
         outputToConsole.set(true)
+        version.set("1.5.0")
     }
 
     java {

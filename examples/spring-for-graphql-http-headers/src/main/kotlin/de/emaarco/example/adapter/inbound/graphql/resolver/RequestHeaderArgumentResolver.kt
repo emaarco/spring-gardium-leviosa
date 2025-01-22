@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RequestHeader
  */
 class RequestHeaderArgumentResolver : HandlerMethodArgumentResolver {
 
-    override fun supportsParameter(parameter: MethodParameter) = parameter.hasParameterAnnotation(RequestHeader::class.java)
+    override fun supportsParameter(parameter: MethodParameter) =
+        parameter.hasParameterAnnotation(RequestHeader::class.java)
 
     override fun resolveArgument(
         parameter: MethodParameter,

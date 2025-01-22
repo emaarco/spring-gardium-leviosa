@@ -9,7 +9,9 @@ import org.springframework.stereotype.Controller
 import java.util.*
 
 @Controller
-class DeleteTaskController(private val query: DeleteTaskUseCase) {
+class DeleteTaskController(
+    private val query: DeleteTaskUseCase,
+) {
 
     private val log = KotlinLogging.logger {}
 
