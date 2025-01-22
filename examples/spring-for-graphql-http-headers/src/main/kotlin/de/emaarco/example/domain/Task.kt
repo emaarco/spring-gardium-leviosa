@@ -10,8 +10,11 @@ data class Task(
     val completed: Boolean = false,
 ) {
     fun complete() = this.copy(completed = true)
-    fun updateContent(title: TaskTitle, description: TaskDescription?) = this.copy(
+    fun updateContent(
+        title: TaskTitle,
+        description: TaskDescription?,
+    ) = this.copy(
         title = title,
-        description = description
+        description = description,
     )
 }

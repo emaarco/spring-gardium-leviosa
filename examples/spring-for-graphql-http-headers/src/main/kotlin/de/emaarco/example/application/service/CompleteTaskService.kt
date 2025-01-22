@@ -1,7 +1,7 @@
 package de.emaarco.example.application.service
 
-import de.emaarco.example.application.port.`in`.CompleteTaskUseCase
-import de.emaarco.example.application.port.out.TaskRepository
+import de.emaarco.example.application.port.inbound.CompleteTaskUseCase
+import de.emaarco.example.application.port.outbound.TaskRepository
 import de.emaarco.example.domain.Task
 import de.emaarco.example.domain.TaskId
 import mu.KotlinLogging
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class CompleteTaskService(
-    private val repository: TaskRepository
+    private val repository: TaskRepository,
 ) : CompleteTaskUseCase {
 
     private val log = KotlinLogging.logger {}
@@ -21,5 +21,4 @@ class CompleteTaskService(
         log.info { "Task successfully completed: $completedTask" }
         return completedTask
     }
-
 }

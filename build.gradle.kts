@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.spring)
     alias(libs.plugins.springframework)
     alias(libs.plugins.spring.dependency)
+    alias(libs.plugins.ktlint)
 }
 
 allprojects {
@@ -36,6 +37,20 @@ subprojects {
     println("Enabling Spring Boot Dependency Management in project ${project.name}...")
     apply(plugin = "io.spring.dependency-management")
 
+    println("Enabling ktLint plugin in project ${project.name}...")
+    apply(plugin = "org.jlleitschuh.gradle.ktlint")
+
+    ktlint {
+        debug.set(true)
+        outputToConsole.set(true)
+    }
+
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(21))
+        }
+    }
+
     tasks.withType<KotlinCompile>().configureEach {
         println("Configuring $name in project ${project.name}...")
         compilerOptions {
@@ -48,4 +63,7 @@ subprojects {
         useJUnitPlatform()
     }
 
+    tasks.named("build") {
+        dependsOn("ktlintCheck")
+    }
 }

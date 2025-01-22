@@ -1,14 +1,14 @@
 package de.emaarco.example.application.service
 
-import de.emaarco.example.application.port.`in`.UpdateTaskUseCase
-import de.emaarco.example.application.port.out.TaskRepository
+import de.emaarco.example.application.port.inbound.UpdateTaskUseCase
+import de.emaarco.example.application.port.outbound.TaskRepository
 import de.emaarco.example.domain.Task
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
 class UpdateTaskService(
-    private val repository: TaskRepository
+    private val repository: TaskRepository,
 ) : UpdateTaskUseCase {
 
     private val log = KotlinLogging.logger {}
@@ -20,5 +20,4 @@ class UpdateTaskService(
         log.info { "Task successfully updated: $updatedTask" }
         return updatedTask
     }
-
 }
