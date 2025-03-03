@@ -13,9 +13,6 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.bundles.defaultService)
-    implementation(libs.bundles.graphql)
-    testImplementation(libs.bundles.test)
-    testImplementation(libs.spring.graphql.test)
-    testImplementation(project(":examples:archunit"))
+    implementation(libs.bundles.test)
+    implementation(libs.bundles.archunit)
 }
