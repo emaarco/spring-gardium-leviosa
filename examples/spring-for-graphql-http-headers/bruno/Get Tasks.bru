@@ -1,0 +1,24 @@
+meta {
+  name: Get Tasks
+  type: graphql
+  seq: 2
+}
+
+post {
+  url: http://localhost:8081/api/graphql
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  query allTasks {
+    tasks {
+      id
+      title
+      description
+      completed
+    
+    }
+  }
+  
+}

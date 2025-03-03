@@ -1,0 +1,26 @@
+meta {
+  name: Create Task
+  type: graphql
+  seq: 3
+}
+
+post {
+  url: http://localhost:8081/api/graphql
+  body: graphql
+  auth: none
+}
+
+headers {
+  x-user-id: user123
+}
+
+body:graphql {
+  mutation createTask {
+    addTask(payload: { title: "test", description: "test2" }) {
+      id
+      title
+      description
+    }
+  }
+  
+}
