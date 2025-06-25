@@ -13,5 +13,4 @@ class FragmentSourceExampleArchitectureTest {
 
     @Nested
     inner class CodingGuidelines : BasicCodingGuidelinesTest(rootPackage)
-
 }

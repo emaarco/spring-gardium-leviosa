@@ -12,16 +12,19 @@ abstract class BasicCodingGuidelinesTest(
     val pathFromRoot: String,
 ) {
 
-    private var allClasses = ClassFileImporter()
-        .importPackages(pathFromRoot)
+    private var allClasses =
+        ClassFileImporter()
+            .importPackages(pathFromRoot)
 
-    private val productionClasses = ClassFileImporter()
-        .withImportOption(DoNotIncludeTests())
-        .importPackages(pathFromRoot)
+    private val productionClasses =
+        ClassFileImporter()
+            .withImportOption(DoNotIncludeTests())
+            .importPackages(pathFromRoot)
 
     @Test
     fun `each class has package declaration`() {
-        ArchRuleDefinition.classes()
+        ArchRuleDefinition
+            .classes()
             .should()
             .resideInAnyPackage("$pathFromRoot..")
             .because("All classes should be in the specified package structure")
@@ -38,5 +41,4 @@ abstract class BasicCodingGuidelinesTest(
             .because("Classes should not have circular dependencies")
             .check(allClasses)
     }
-
 }

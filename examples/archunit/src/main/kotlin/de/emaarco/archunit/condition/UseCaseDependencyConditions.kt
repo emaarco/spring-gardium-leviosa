@@ -14,25 +14,27 @@ object UseCaseDependencyConditions {
      * Moreover, it prevents performance issues by ensuring only one transaction is open,
      * as transactions are managed on the application layer.
      */
-    val onlyFulfilOneUseCase = object : ArchCondition<JavaClass>("only fulfil one use case") {
+    val onlyFulfilOneUseCase =
+        object : ArchCondition<JavaClass>("only fulfil one use case") {
 
-        override fun check(javaClass: JavaClass, events: ConditionEvents) {
-            val applicationDependencies = this.findUseCaseDependenciesInConstructor(javaClass)
-            if (applicationDependencies.size > 1) {
-                val message = "${javaClass.name} depends on more than one use-case: $applicationDependencies"
-                events.add(SimpleConditionEvent.violated(this.javaClass, message))
+            override fun check(
+                javaClass: JavaClass,
+                events: ConditionEvents,
+            ) {
+                val applicationDependencies = this.findUseCaseDependenciesInConstructor(javaClass)
+                if (applicationDependencies.size > 1) {
+                    val message = "${javaClass.name} depends on more than one use-case: $applicationDependencies"
+                    events.add(SimpleConditionEvent.violated(this.javaClass, message))
+                }
             }
-        }
 
-        /**
-         * Finds all constructor parameters that are from the application package,
-         * which typically represent use case dependencies.
-         */
-        private fun findUseCaseDependenciesInConstructor(javaClass: JavaClass): List<JavaParameter> {
-            return javaClass.constructors
-                .flatMap { constructor -> constructor.parameters }
-                .filter { param -> param.rawType.packageName.contains("application.port.inbound") }
+            /**
+             * Finds all constructor parameters that are from the application package,
+             * which typically represent use case dependencies.
+             */
+            private fun findUseCaseDependenciesInConstructor(javaClass: JavaClass): List<JavaParameter> =
+                javaClass.constructors
+                    .flatMap { constructor -> constructor.parameters }
+                    .filter { param -> param.rawType.packageName.contains("application.port.inbound") }
         }
-    }
-
 }

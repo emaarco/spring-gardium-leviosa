@@ -13,5 +13,4 @@ class SpringForGraphQlHeaderExampleArchitectureTest {
 
     @Nested
     inner class CodingGuidelines : BasicCodingGuidelinesTest(rootPackage)
-
 }
