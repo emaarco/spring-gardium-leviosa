@@ -14,11 +14,12 @@ object InterfaceImplementationConditions {
      * @param packagePattern The package pattern the interface should reside in
      * @return ArchCondition that can be used in `.should(...)`
      */
-    fun implementExactlyOneInterfaceFrom(
-        packagePattern: String
-    ): ArchCondition<JavaClass> {
-        return object : ArchCondition<JavaClass>("implement exactly one interface from $packagePattern") {
-            override fun check(item: JavaClass, events: ConditionEvents) {
+    fun implementExactlyOneInterfaceFrom(packagePattern: String): ArchCondition<JavaClass> =
+        object : ArchCondition<JavaClass>("implement exactly one interface from $packagePattern") {
+            override fun check(
+                item: JavaClass,
+                events: ConditionEvents,
+            ) {
                 val clazzName = item.simpleName
                 val useCasesOrQueries = item.interfaces.filter { it.isLocatedInPackage(packagePattern) }
                 if (useCasesOrQueries.size != 1) {
@@ -30,10 +31,7 @@ object InterfaceImplementationConditions {
                 }
             }
         }
-    }
 
-    private fun JavaType.isLocatedInPackage(packagePattern: String): Boolean {
-        return this.toErasure().packageName.contains(packagePattern)
-    }
-
+    private fun JavaType.isLocatedInPackage(packagePattern: String): Boolean =
+        this.toErasure().packageName.contains(packagePattern)
 }

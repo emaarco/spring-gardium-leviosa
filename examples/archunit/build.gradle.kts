@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.kapt)
@@ -15,4 +17,8 @@ repositories {
 dependencies {
     implementation(libs.bundles.test)
     implementation(libs.bundles.archunit)
+}
+
+tasks.getByName<BootJar>("bootJar") {
+    enabled = false
 }
