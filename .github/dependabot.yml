@@ -14,5 +14,5 @@ updates:
                     - "patch"
                     - "minor"
                     - "major"
-        assignees:
+        reviewers:
             - emaarco
