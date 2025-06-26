@@ -12,4 +12,7 @@ updates:
                     - "*"
                 update-types:
                     - "patch"
+                    - "minor"
                     - "major"
+        assignees:
+            - emaarco
