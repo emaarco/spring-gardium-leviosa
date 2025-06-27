@@ -17,6 +17,14 @@ The repository is organized as follows:
 
 - **`/examples`**: Code examples to specific blog-posts.
 
+## 🚀 Current Examples
+
+- **`/archunit`**: Contains architecture tests using ArchUnit, a library for checking the architecture of Java
+  codebases.
+- **`/konsist`**: Contains architecture tests using Konsist, a Kotlin library for enforcing coding guidelines and
+  architecture rules.
+- **`/spring-*`**: Various Spring Boot examples demonstrating best-practices or solutions to different challenges.
+
 ## 🌌 License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
