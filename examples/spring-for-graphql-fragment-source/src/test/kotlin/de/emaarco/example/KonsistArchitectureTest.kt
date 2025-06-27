@@ -1,10 +1,10 @@
 package de.emaarco.example
 
-import de.emaarco.archunit.BasicCodingGuidelinesTest
-import de.emaarco.archunit.HexagonalArchitectureTest
+import de.emaarco.konsist.BasicCodingGuidelinesTest
+import de.emaarco.konsist.HexagonalArchitectureTest
 import org.junit.jupiter.api.Nested
 
-class SpringForGraphQlHeaderExampleArchitectureTest {
+class KonsistArchitectureTest {
 
     private val rootPackage = "de.emaarco.example"
 

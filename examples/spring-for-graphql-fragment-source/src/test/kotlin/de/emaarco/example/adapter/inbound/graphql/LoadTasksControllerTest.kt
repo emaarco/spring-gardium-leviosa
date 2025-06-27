@@ -3,7 +3,11 @@ package de.emaarco.example.adapter.inbound.graphql
 import com.ninjasquad.springmockk.MockkBean
 import de.emaarco.example.adapter.inbound.shared.TaskDto
 import de.emaarco.example.application.port.inbound.LoadTasksQuery
-import de.emaarco.example.domain.*
+import de.emaarco.example.domain.Task
+import de.emaarco.example.domain.TaskDescription
+import de.emaarco.example.domain.TaskId
+import de.emaarco.example.domain.TaskTitle
+import de.emaarco.example.domain.UserId
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.verify
