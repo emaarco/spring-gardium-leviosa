@@ -19,10 +19,10 @@ The repository is organized as follows:
 
 ## 🚀 Current Examples
 
-- **`/archunit`**: Contains architecture tests using ArchUnit, a library for checking the architecture of Java
-  codebases.
+- **`archunit`**: Contains architecture tests using ArchUnit, a library for checking the architecture of Java
+  codebases (see [more](examples/archunit/README.md)).
 - **`/konsist`**: Contains architecture tests using Konsist, a Kotlin library for enforcing coding guidelines and
-  architecture rules.
+  architecture rules (see [more](examples/konsist/README.md)).
 - **`/spring-*`**: Various Spring Boot examples demonstrating best-practices or solutions to different challenges.
 
 ## 🌌 License
