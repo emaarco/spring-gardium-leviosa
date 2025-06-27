@@ -10,6 +10,7 @@ mockito_version = "5.2.0"
 archunit_version = "1.4.1"
 kotlin_mockito_version = "5.4.0"
 ktlint_gradle_version = "12.3.0"
+konsist_version = "0.17.3"
 
 [libraries]
 web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "spring_version" }
@@ -24,6 +25,7 @@ spring_test = { module = "org.springframework.boot:spring-boot-starter-test", ve
 spring_graphql_test = { module = "org.springframework.graphql:spring-graphql-test", version.ref = "spring_graphql_test_version" }
 mockito = { module = "org.mockito:mockito-inline", version.ref = "mockito_version" }
 archunit = { module = "com.tngtech.archunit:archunit", version.ref = "archunit_version" }
+konsist = { module = "com.lemonappdev:konsist", version.ref = "konsist_version" }
 kotlin_mockito = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "kotlin_mockito_version" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk_version" }
 spring_mockk = { module = "com.ninja-squad:springmockk", version.ref = "spring_mockk_version" }
@@ -36,6 +38,7 @@ defaultService = ["kotlin_logging", "aop", "devtools", "actuator", "web"]
 graphql = ["graphql", "webflux"]
 test = ["spring_test", "mockito", "mockk", "spring_mockk", "kotlin_mockito"]
 archunit = ["archunit"]
+konsist = ["konsist"]
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin_version" }
