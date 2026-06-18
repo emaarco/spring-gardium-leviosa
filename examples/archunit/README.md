@@ -7,10 +7,51 @@ This module demonstrates how to use [ArchUnit](https://www.archunit.org/) to enf
 ArchUnit is a free, simple, and extensible library for checking the architecture of your Java or Kotlin code. It lets you define architecture rules as code, which are then verified during test execution. This ensures that your codebase adheres to your architectural decisions and prevents architectural drift over time.
 
 Key benefits:
+
 - Define architecture rules as readable code
 - Catch architectural violations early in the development process
 - Integrate with your existing test suite (JUnit)
 - No runtime dependencies in production code
+
+## ⚙️ How It Works
+
+ArchUnit analyzes your **compiled bytecode**. It reads the `.class` files via its
+`ClassFileImporter` (see the test classes in this module) and builds a graph of classes,
+methods, fields, annotations and — crucially — the **actual dependencies** between them.
+Rules are expressed as fluent assertions (`ArchRuleDefinition`, `layeredArchitecture()`)
+over that imported graph.
+
+Because it works on the **bytecode**, not on the source:
+
+- ✅ It resolves the _real_ dependency graph: method calls, field accesses, inheritance
+  and annotation usage — even ones that are not obvious from a single source file.
+- ✅ It is **language-agnostic on the JVM**: it checks Java and Kotlin (and any other JVM
+  language) uniformly, which makes it a good fit for mixed-language codebases.
+- ⚠️ The code must be **compiled first** — rules run as part of the test phase, after
+  `.class` files exist.
+- ⚠️ It cannot see source-only details that are erased or transformed by the Kotlin
+  compiler: top-level functions become synthetic `…Kt` classes, type aliases disappear,
+  KDoc and source declaration order are gone.
+
+> 🔁 For a source-based alternative that understands Kotlin-specific constructs without
+> compiling, see the sibling [`konsist`](../konsist/README.md) module.
+
+## 🔍 ArchUnit vs. Konsist — at a glance
+
+| Aspect                                                                                    | **ArchUnit** (this module)                               | **Konsist** ([sibling](../konsist/README.md)) |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------- |
+| Analysis target                                                                           | Compiled **bytecode** (`.class` via `ClassFileImporter`) | Kotlin **source code** (AST/PSI)              |
+| Needs compilation first                                                                   | ✅ Yes                                                   | ❌ No                                         |
+| Languages                                                                                 | Any JVM language (Java **and** Kotlin)                   | Kotlin only                                   |
+| Real call- & field-level dependency graph                                                 | ✅ Full (resolved from bytecode)                         | ⚠️ Limited (declared references)              |
+| Kotlin source constructs (top-level funcs, type aliases, KDoc, declaration order, naming) | ⚠️ Limited / erased after compilation                    | ✅ First-class                                |
+| Layer / dependency rules                                                                  | ✅ `layeredArchitecture()`                               | ✅ `assertArchitecture { … }`                 |
+| Custom rules                                                                              | Custom `ArchCondition` classes                           | Lambdas over declarations                     |
+
+**Rule of thumb:** reach for **ArchUnit** when your rules are about _what the compiled
+code actually depends on_, or when you need to cover Java as well; reach for **Konsist**
+when your rules are about _how the Kotlin source is written_ (style, naming, file
+structure, Kotlin-specific declarations).
 
 ## 🔧 Available Tests
 
@@ -19,6 +60,7 @@ This module provides two main abstract test classes that you can extend in your 
 ### 1. BasicCodingGuidelinesTest
 
 Enforces basic coding guidelines:
+
 - Ensures all classes have proper package declarations
 - Verifies that classes are free of circular dependencies
 
@@ -29,6 +71,7 @@ class YourBasicCodingGuidelinesTest : BasicCodingGuidelinesTest("com.yourcompany
 ### 2. HexagonalArchitectureTest
 
 Enforces rules specific to hexagonal (ports and adapters) architecture:
+
 - Verifies layer separation and dependencies
 - Ensures ports are defined as interfaces
 - Checks that application services implement exactly one use case
