@@ -2,7 +2,7 @@ package de.emaarco.example.adapter.inbound.graphql
 
 import de.emaarco.example.adapter.inbound.shared.TaskDto
 import de.emaarco.example.application.port.inbound.LoadTasksQuery
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.graphql.data.method.annotation.QueryMapping
 import org.springframework.stereotype.Controller
 

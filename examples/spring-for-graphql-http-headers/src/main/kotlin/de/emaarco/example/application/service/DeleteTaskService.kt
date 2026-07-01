@@ -3,7 +3,7 @@ package de.emaarco.example.application.service
 import de.emaarco.example.application.port.inbound.DeleteTaskUseCase
 import de.emaarco.example.application.port.outbound.TaskRepository
 import de.emaarco.example.domain.TaskId
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service

@@ -1,7 +1,7 @@
 package de.emaarco.example.adapter.inbound.graphql.interceptor
 
-import mu.KLogger
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.graphql.server.WebGraphQlInterceptor
 import org.springframework.graphql.server.WebGraphQlInterceptor.Chain
 import org.springframework.graphql.server.WebGraphQlRequest

@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.kotlin.spring)
     alias(libs.plugins.springframework)
-    alias(libs.plugins.spring.dependency)
     alias(libs.plugins.ktlint)
 }
 
@@ -35,6 +34,10 @@ tasks.getByName<BootJar>("bootJar") {
     enabled = false
 }
 
+// Captured here because the type-safe `libs` accessor is only available in the
+// root build script scope, not inside the `subprojects { }` configuration closure.
+val springBootBom = libs.spring.boot.bom
+
 subprojects {
 
     println("Enabling JVM plugin in project ${project.name}...")
@@ -43,8 +46,11 @@ subprojects {
     println("Enabling Kotlin Spring plugin in project ${project.name}...")
     apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
-    println("Enabling Spring Boot Dependency Management in project ${project.name}...")
-    apply(plugin = "io.spring.dependency-management")
+    println("Importing the Spring Boot BOM as a Gradle platform in project ${project.name}...")
+    dependencies {
+        "implementation"(platform(springBootBom))
+        "testImplementation"(platform(springBootBom))
+    }
 
     println("Enabling ktLint plugin in project ${project.name}...")
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
