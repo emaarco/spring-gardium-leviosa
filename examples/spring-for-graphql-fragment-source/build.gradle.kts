@@ -17,6 +17,7 @@ dependencies {
     implementation(libs.bundles.graphql)
     testImplementation(libs.bundles.test)
     testImplementation(libs.spring.graphql.test)
+    testImplementation(libs.spring.boot.graphql.test)
     testImplementation(project(":examples:archunit"))
     testImplementation(project(":examples:konsist"))
 }

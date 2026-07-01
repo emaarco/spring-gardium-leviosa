@@ -28,8 +28,7 @@ class GraphQlRequestHeaderInterceptor(
         return chain.next(request)
     }
 
-    private fun getHeadersFromRequest(request: WebGraphQlRequest): Map<String, Any> =
-        request.headers.mapValues { it.value.first() }
+    private fun getHeadersFromRequest(request: WebGraphQlRequest): Map<String, Any> = request.headers.toSingleValueMap()
 
     private fun addHeadersToGraphQLContext(
         request: WebGraphQlRequest,
