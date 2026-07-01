@@ -1,10 +1,10 @@
 [versions]
-spring_version = "3.5.14"
+spring_version = "3.5.16"
 spring_dependency_version = "1.1.7"
 mockk_version = "1.14.11"
 spring_mockk_version = "5.0.1"
-spring_graphql_test_version = "2.0.3"
-kotlin_version = "2.3.21"
+spring_graphql_test_version = "2.0.4"
+kotlin_version = "2.4.0"
 kotlin_logging_version = "3.0.5"
 mockito_version = "5.2.0"
 archunit_version = "1.4.2"
