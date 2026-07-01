@@ -2,8 +2,8 @@ package de.emaarco.example.adapter.inbound.spring
 
 import de.emaarco.example.adapter.inbound.shared.TaskInput
 import de.emaarco.example.application.port.inbound.AddTaskUseCase
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PostConstruct
-import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
 /**

@@ -4,7 +4,7 @@ import de.emaarco.example.adapter.inbound.shared.CustomRequestHeaders.X_USER_ID
 import de.emaarco.example.adapter.inbound.shared.TaskDto
 import de.emaarco.example.adapter.inbound.shared.TaskInput
 import de.emaarco.example.application.port.inbound.AddTaskUseCase
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.ContextValue
 import org.springframework.graphql.data.method.annotation.MutationMapping

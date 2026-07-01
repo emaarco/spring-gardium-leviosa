@@ -9,8 +9,8 @@ import org.springframework.graphql.support.DocumentSource
 import org.springframework.graphql.support.ResourceDocumentSource
 import org.springframework.graphql.test.tester.ExecutionGraphQlServiceTester
 import org.springframework.graphql.test.tester.GraphQlTester
-import org.springframework.http.codec.json.Jackson2JsonDecoder
-import org.springframework.http.codec.json.Jackson2JsonEncoder
+import org.springframework.http.codec.json.JacksonJsonDecoder
+import org.springframework.http.codec.json.JacksonJsonEncoder
 
 @Configuration
 class GraphQlTestConfiguration {
@@ -22,8 +22,8 @@ class GraphQlTestConfiguration {
         return ExecutionGraphQlServiceTester
             .builder(executionGraphQlTester)
             .documentSource(customDocumentSource)
-            .encoder(Jackson2JsonEncoder())
-            .decoder(Jackson2JsonDecoder())
+            .encoder(JacksonJsonEncoder())
+            .decoder(JacksonJsonDecoder())
             .build()
     }
 

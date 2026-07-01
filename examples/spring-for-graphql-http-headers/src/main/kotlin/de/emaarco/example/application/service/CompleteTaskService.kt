@@ -4,7 +4,7 @@ import de.emaarco.example.application.port.inbound.CompleteTaskUseCase
 import de.emaarco.example.application.port.outbound.TaskRepository
 import de.emaarco.example.domain.Task
 import de.emaarco.example.domain.TaskId
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
