@@ -34,8 +34,6 @@ tasks.getByName<BootJar>("bootJar") {
     enabled = false
 }
 
-// Captured here because the type-safe `libs` accessor is only available in the
-// root build script scope, not inside the `subprojects { }` configuration closure.
 val springBootBom = libs.spring.boot.bom
 
 subprojects {

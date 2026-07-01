@@ -1,7 +1,5 @@
 [versions]
 spring_version = "4.1.0"
-# Kept separate from spring_version so Dependabot can bump the plugin
-# independently of the library modules (see dependabot-core#6990).
 spring_boot_plugin_version = "4.1.0"
 mockk_version = "1.14.11"
 spring_mockk_version = "5.0.1"
@@ -21,8 +19,6 @@ webflux = { module = "org.springframework.boot:spring-boot-starter-webflux", ver
 aop = { module = "org.springframework.boot:spring-boot-starter-aspectj", version.ref = "spring_version" }
 actuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version.ref = "spring_version" }
 devtools = { module = "org.springframework.boot:spring-boot-devtools", version.ref = "spring_version" }
-
-# Spring Boot BOM, imported as a Gradle platform (replaces io.spring.dependency-management)
 spring_boot_bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring_version" }
 
 # Tests
