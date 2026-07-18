@@ -1,19 +1,22 @@
-package de.emaarco.archunit
+package de.emaarco.architecture
 
 import com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage
 import com.tngtech.archunit.core.importer.ClassFileImporter
 import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition
 import com.tngtech.archunit.library.Architectures
-import de.emaarco.archunit.condition.InterfaceImplementationConditions
-import de.emaarco.archunit.condition.UseCaseDependencyConditions.onlyFulfilOneUseCase
+import de.emaarco.architecture.condition.InterfaceImplementationConditions
+import de.emaarco.architecture.condition.UseCaseDependencyConditions.onlyFulfilOneUseCase
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 /**
- * Structural & dependency rules of the hexagonal architecture, checked against the resolved bytecode.
- * Naming conventions live in the sibling [NamingConventionArchitectureTest].
+ * ArchUnit half of the combined suite: the *dependency & structure* rules, checked against the
+ * resolved bytecode graph. Naming conventions live in [NamingConventionArchitectureTest].
+ *
+ * Self-contained — this module intentionally duplicates the rules of the standalone [`archunit`]
+ * example rather than importing it, so it can be dropped into a service on its own.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class HexagonalArchitectureTest(

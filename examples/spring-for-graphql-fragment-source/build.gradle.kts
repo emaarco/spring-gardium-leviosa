@@ -20,4 +20,5 @@ dependencies {
     testImplementation(libs.spring.boot.graphql.test)
     testImplementation(project(":examples:archunit"))
     testImplementation(project(":examples:konsist"))
+    testImplementation(project(":examples:architecture-combined"))
 }

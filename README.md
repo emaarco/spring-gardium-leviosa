@@ -23,6 +23,8 @@ The repository is organized as follows:
   codebases (see [more](examples/archunit/README.md)).
 - **`/konsist`**: Contains architecture tests using Konsist, a Kotlin library for enforcing coding guidelines and
   architecture rules (see [more](examples/konsist/README.md)).
+- **`/architecture-combined`**: A common module a service depends on to get one combined suite — ArchUnit and
+  Konsist together, each enforcing the rules it is best at (see [more](examples/architecture-combined/README.md)).
 - **`/spring-*`**: Various Spring Boot examples demonstrating best-practices or solutions to different challenges.
 
 ## 🌌 License

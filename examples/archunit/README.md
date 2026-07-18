@@ -55,7 +55,7 @@ structure, Kotlin-specific declarations).
 
 ## 🔧 Available Tests
 
-This module provides two main abstract test classes that you can extend in your projects:
+This module provides three abstract test classes that you can extend in your projects:
 
 ### 1. BasicCodingGuidelinesTest
 
@@ -63,6 +63,7 @@ Enforces basic coding guidelines:
 
 - Ensures all classes have proper package declarations
 - Verifies that classes are free of circular dependencies
+- Forbids `println` / `System.out` in production code (use a logger instead)
 
 ```kotlin
 class YourBasicCodingGuidelinesTest : BasicCodingGuidelinesTest("com.yourcompany.yourproject")
@@ -73,13 +74,39 @@ class YourBasicCodingGuidelinesTest : BasicCodingGuidelinesTest("com.yourcompany
 Enforces rules specific to hexagonal (ports and adapters) architecture:
 
 - Verifies layer separation and dependencies
-- Ensures ports are defined as interfaces
+- Ensures the **domain layer is technology-neutral** (no framework/infrastructure dependencies)
+- Ensures the **application layer only orchestrates** (domain, ports and framework tooling only)
+- Ensures ports are defined as interfaces and don't depend on services
+- Keeps application & adapters in their expected sub-packages and keeps inbound/outbound adapters isolated
 - Checks that application services implement exactly one use case
 - Validates that adapters only fulfill one use case or query
 
 ```kotlin
 class YourHexagonalArchitectureTest : HexagonalArchitectureTest("com.yourcompany.yourproject")
 ```
+
+### 3. NamingConventionArchitectureTest
+
+Enforces per-layer class-name conventions, kept separate from the structural rules above. Every rule
+lists the suffixes allowed in a package together with a short rationale (`AllowedSuffix(suffix, reason)`),
+so the test doubles as living documentation of the vocabulary:
+
+- Inbound ports → `*UseCase` / `*Query`; outbound ports → `*Port` / `*Repository`
+- Application services → `*Service` (or `*Configuration`)
+- Inbound adapters → per sub-package (`graphql`, `rest`, `shared`, `spring`), e.g. `*Controller`,
+  `*Configuration`, `*Interceptor`, `*Resolver`, `*Dto`, `*Input`
+- Outbound adapters → `*PersistenceAdapter` / `*Adapter` / `*Mapper`
+
+Packages a given service doesn't have simply match no classes, so the same rule set fits every service.
+
+```kotlin
+class YourNamingConventionTest : NamingConventionArchitectureTest("com.yourcompany.yourproject")
+```
+
+> 🧭 A service can depend on this module on its own (both `spring-for-graphql-*` examples show a
+> standalone `ArchUnitArchitectureTest`) — or reach for the
+> [`architecture-combined`](../architecture-combined/README.md) module, which combines these ArchUnit
+> rules with Konsist's source-level rules into a single one-line suite.
 
 ## 🚀 How to Use
 
