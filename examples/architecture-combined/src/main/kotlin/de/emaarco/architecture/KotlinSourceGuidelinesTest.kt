@@ -1,4 +1,4 @@
-package de.emaarco.konsist
+package de.emaarco.architecture
 
 import com.lemonappdev.konsist.api.Konsist
 import com.lemonappdev.konsist.api.verify.assertFalse
@@ -6,18 +6,17 @@ import com.lemonappdev.konsist.api.verify.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
+/**
+ * Konsist half of the combined suite: the *source-structure* rules that ArchUnit cannot see, because
+ * the Kotlin compiler erases them into synthetic bytecode.
+ *
+ * Konsist's own hexagonal-layer checks are intentionally omitted here — the [HexagonalArchitectureTest]
+ * above already covers layering on the resolved bytecode graph, which is stronger.
+ */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-abstract class BasicCodingGuidelinesTest(
+abstract class KotlinSourceGuidelinesTest(
     val pathFromRoot: String,
 ) {
-
-    @Test
-    fun `each class has package declaration`() {
-        Konsist
-            .scopeFromProject(pathFromRoot)
-            .classesAndInterfacesAndObjects()
-            .assertTrue { it.resideInPackage("..") }
-    }
 
     @Test
     fun `no wildcard imports`() {
@@ -27,10 +26,10 @@ abstract class BasicCodingGuidelinesTest(
     }
 
     /**
-     * Konsist showcase: ArchUnit analyses bytecode, where the Kotlin compiler merges every
-     * top-level declaration of a `.kt` file into synthetic class files — so it cannot tell how many
-     * declarations a single source file holds. Konsist reads the source directly and can, which is
-     * exactly why the two tools complement each other.
+     * ArchUnit reads bytecode, where the Kotlin compiler merges every top-level declaration of a
+     * `.kt` file into synthetic class files — so it cannot tell how many declarations a source file
+     * holds. Konsist reads the source directly and can. This rule is the reason both tools earn their
+     * place in the combined suite.
      */
     @Test
     fun `files define at most one top-level class, interface or object`() {

@@ -54,7 +54,7 @@ when you need to cover Java as well.
 
 ## 🔧 Available Tests
 
-This module provides two main abstract test classes that you can extend in your projects:
+This module provides three abstract test classes that you can extend in your projects:
 
 ### 1. BasicCodingGuidelinesTest
 
@@ -62,6 +62,12 @@ Enforces basic coding guidelines:
 
 - Ensures all classes have proper package declarations
 - Prevents wildcard imports (except for java.util)
+- Enforces **one top-level class/interface/object per `.kt` file** (SRP)
+
+> 💡 The one-declaration-per-file rule is the flagship example of *why Konsist complements ArchUnit*:
+> the Kotlin compiler merges every top-level declaration of a file into synthetic class files, so
+> ArchUnit (which reads bytecode) cannot tell how many declarations a source file holds — but Konsist
+> reads the source and can.
 
 ```kotlin
 class YourBasicCodingGuidelinesTest : BasicCodingGuidelinesTest("com.yourcompany.yourproject")
@@ -80,6 +86,27 @@ Enforces rules specific to hexagonal (ports and adapters) architecture:
 ```kotlin
 class YourHexagonalArchitectureTest : HexagonalArchitectureTest("com.yourcompany.yourproject")
 ```
+
+### 3. NamingConventionArchitectureTest
+
+The source-based counterpart to ArchUnit's naming test — it reads the `.kt` declarations directly and
+enforces per-layer class-name suffixes, each with a short rationale (`AllowedSuffix(suffix, reason)`):
+
+- Inbound ports → `*UseCase` / `*Query`; outbound ports → `*Port` / `*Repository`
+- Application services → `*Service` (or `*Configuration`)
+- Inbound adapters → per sub-package (`graphql`, `rest`, `shared`, `spring`)
+- Outbound adapters → `*PersistenceAdapter` / `*Adapter` / `*Mapper`
+
+Packages a given service doesn't have are skipped, so the same rule set fits every service.
+
+```kotlin
+class YourNamingConventionTest : NamingConventionArchitectureTest("com.yourcompany.yourproject")
+```
+
+> 🧭 A service can depend on this module on its own (both `spring-for-graphql-*` examples show a
+> standalone `KonsistArchitectureTest`) — or reach for the
+> [`architecture-combined`](../architecture-combined/README.md) module, which combines these Konsist
+> rules with ArchUnit's bytecode-level rules into a single one-line suite.
 
 ## 🚀 How to Use
 

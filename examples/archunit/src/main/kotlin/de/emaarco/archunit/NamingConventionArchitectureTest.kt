@@ -1,0 +1,189 @@
+package de.emaarco.archunit
+
+import com.tngtech.archunit.core.importer.ClassFileImporter
+import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests
+import com.tngtech.archunit.lang.conditions.ArchConditions.haveSimpleNameEndingWith
+import com.tngtech.archunit.lang.syntax.ArchRuleDefinition
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+
+/**
+ * Naming conventions per hexagonal layer, checked against the compiled bytecode.
+ *
+ * Each rule lists the class-name suffixes that are allowed in a given package, together with a short
+ * rationale via [AllowedSuffix] — so the file doubles as living documentation of the vocabulary a
+ * service is expected to use. Rules on packages a given service does not have simply match no classes
+ * (`allowEmptyShould(true)`), so the same rule set fits every service.
+ *
+ * Synthetic Kotlin classes (top-level function holders `…Kt`, `$`-generated and `_` names) and nested
+ * classes are excluded — only top-level declarations carry an intentional name.
+ */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+abstract class NamingConventionArchitectureTest(
+    val rootPackage: String,
+) {
+
+    private val productionClasses =
+        ClassFileImporter()
+            .withImportOption(DoNotIncludeTests())
+            .importPackages(rootPackage)
+
+    @Nested
+    inner class Ports {
+
+        @Test
+        fun `inbound ports are use-cases or queries`() {
+            checkNaming(
+                packageRoot = "..application.port.inbound",
+                allowedSuffixes =
+                    listOf(
+                        AllowedSuffix("UseCase", "inbound port for a state-changing operation"),
+                        AllowedSuffix("Query", "inbound port for a read-only operation"),
+                    ),
+            )
+        }
+
+        @Test
+        fun `outbound ports are ports or repositories`() {
+            checkNaming(
+                packageRoot = "..application.port.outbound",
+                allowedSuffixes =
+                    listOf(
+                        AllowedSuffix("Port", "generic outbound port delegating to infrastructure"),
+                        AllowedSuffix("Repository", "outbound port for persistence access"),
+                    ),
+            )
+        }
+    }
+
+    @Nested
+    inner class Application {
+
+        @Test
+        fun `application services are services`() {
+            checkNaming(
+                packageRoot = "..application.service",
+                allowedSuffixes =
+                    listOf(
+                        AllowedSuffix("Service", "orchestrates a use case and owns the transaction boundary"),
+                        AllowedSuffix("Configuration", "Spring configuration for the application layer"),
+                    ),
+            )
+        }
+    }
+
+    @Nested
+    inner class InboundAdapters {
+
+        @Test
+        fun `graphql adapters follow naming conventions`() {
+            checkNaming(
+                packageRoot = "..adapter.inbound.graphql",
+                allowedSuffixes =
+                    listOf(
+                        AllowedSuffix("Controller", "GraphQL resolver, aligned with Spring for GraphQL"),
+                        AllowedSuffix("DataLoader", "batched field resolver following the DataLoader pattern"),
+                        AllowedSuffix("Configuration", "Spring configuration for the GraphQL adapter"),
+                        AllowedSuffix("Interceptor", "WebGraphQlInterceptor enriching the request context"),
+                        AllowedSuffix("Resolver", "argument resolver for controller method parameters"),
+                        AllowedSuffix("Mapper", "translates between GraphQL DTOs and domain types"),
+                    ),
+            )
+        }
+
+        @Test
+        fun `rest adapters follow naming conventions`() {
+            checkNaming(
+                packageRoot = "..adapter.inbound.rest",
+                allowedSuffixes =
+                    listOf(
+                        AllowedSuffix("Controller", "Spring MVC REST controller"),
+                        AllowedSuffix("Dto", "REST response type outside the domain model"),
+                        AllowedSuffix("Input", "REST request type"),
+                        AllowedSuffix("Mapper", "translates between REST DTOs and domain types"),
+                    ),
+            )
+        }
+
+        @Test
+        fun `shared inbound adapter code follows naming conventions`() {
+            checkNaming(
+                packageRoot = "..adapter.inbound.shared",
+                allowedSuffixes =
+                    listOf(
+                        AllowedSuffix("Dto", "response type shared across inbound adapters"),
+                        AllowedSuffix("Input", "request type shared across inbound adapters"),
+                        AllowedSuffix("RequestHeaders", "holder for custom request-header names"),
+                        AllowedSuffix("Mapper", "shared boundary mapper"),
+                    ),
+            )
+        }
+
+        @Test
+        fun `spring inbound adapters follow naming conventions`() {
+            checkNaming(
+                packageRoot = "..adapter.inbound.spring",
+                allowedSuffixes =
+                    listOf(
+                        AllowedSuffix("DataSink", "Spring lifecycle hook feeding data into a use case"),
+                    ),
+            )
+        }
+    }
+
+    @Nested
+    inner class OutboundAdapters {
+
+        @Test
+        fun `outbound adapters follow naming conventions`() {
+            checkNaming(
+                packageRoot = "..adapter.outbound",
+                allowedSuffixes =
+                    listOf(
+                        AllowedSuffix("PersistenceAdapter", "primary outbound adapter implementing out-ports"),
+                        AllowedSuffix("Adapter", "outbound adapter adapting to infrastructure"),
+                        AllowedSuffix("Mapper", "translates between infrastructure types and domain objects"),
+                    ),
+            )
+        }
+    }
+
+    private fun checkNaming(
+        packageRoot: String,
+        allowedSuffixes: List<AllowedSuffix>,
+    ) {
+        require(allowedSuffixes.isNotEmpty()) { "allowedSuffixes must not be empty" }
+        val nameCondition =
+            allowedSuffixes
+                .map { haveSimpleNameEndingWith(it.suffix) }
+                .reduce { acc, next -> acc.or(next) }
+
+        ArchRuleDefinition
+            .classes()
+            .that()
+            .resideInAPackage("$packageRoot..")
+            .and()
+            .areTopLevelClasses()
+            .and()
+            .areNotAnonymousClasses()
+            .and()
+            .haveSimpleNameNotEndingWith("Kt")
+            .and()
+            .haveSimpleNameNotEndingWith("_")
+            .and()
+            .haveSimpleNameNotContaining("\$")
+            .should(nameCondition)
+            .allowEmptyShould(true)
+            .check(productionClasses)
+    }
+
+    /**
+     * An allowed class-name suffix together with a short rationale.
+     * The [reason] documents *why* a suffix is allowed; it is not part of ArchUnit's failure message.
+     */
+    data class AllowedSuffix(
+        val suffix: String,
+        val reason: String,
+    )
+}

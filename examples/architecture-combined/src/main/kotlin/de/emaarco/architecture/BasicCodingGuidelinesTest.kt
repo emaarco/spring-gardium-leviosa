@@ -1,4 +1,4 @@
-package de.emaarco.archunit
+package de.emaarco.architecture
 
 import com.tngtech.archunit.core.importer.ClassFileImporter
 import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests
@@ -7,6 +7,10 @@ import com.tngtech.archunit.library.dependencies.SlicesRuleDefinition
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
+/**
+ * ArchUnit half of the combined suite: general coding guidelines that rely on the resolved bytecode
+ * graph (package structure, freedom of cycles, no `println`).
+ */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class BasicCodingGuidelinesTest(
     val pathFromRoot: String,
