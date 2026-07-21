@@ -179,12 +179,8 @@ abstract class HexagonalArchitectureTest(
                 .should()
                 .accessClassesThat(
                     resideInAPackage("..application.port.inbound..").and(INTERFACES),
-                ).because(
-                    "A service implements its own use-case but must never call or instantiate another " +
-                        "use-case; only the inbound *port interfaces* are forbidden ('access' = method " +
-                        "and constructor calls), so a service may still use its own use-case's nested " +
-                        "Command / Query data types",
-                ).check(productionClasses)
+                ).because("A service may implement its own use-case but must never call another one")
+                .check(productionClasses)
         }
     }
 
