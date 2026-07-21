@@ -14,3 +14,17 @@ updates:
                     - "patch"
                     - "minor"
                     - "major"
+
+    # Config for GitHub Actions (keeps SHA pins and version comments fresh)
+    -   package-ecosystem: "github-actions"
+        directory: "/"
+        schedule:
+            interval: "monthly"
+        groups:
+            github-actions:
+                patterns:
+                    - "*"
+                update-types:
+                    - "patch"
+                    - "minor"
+                    - "major"
