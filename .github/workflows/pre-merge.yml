@@ -66,9 +66,7 @@ jobs:
       - name: Start application
         run: nohup ./gradlew :examples:${{ matrix.module }}:bootRun > app.log 2>&1 &
 
-      # Step 6: Wait until the app reports healthy (poll /actuator/health).
-      #         The e2e job runs with a cold Gradle cache, so the first bootRun
-      #         also compiles the module - allow a generous budget (90 x 2s).
+      # Step 6: Poll /actuator/health until UP (generous budget - cold cache means the first bootRun also compiles)
       - name: Wait for health
         run: |
           for i in $(seq 1 90); do
@@ -82,8 +80,7 @@ jobs:
           cat app.log
           exit 1
 
-      # Step 7: Run the Bruno end-to-end collection against the running app
-      #         (the CLI must be invoked from the collection root)
+      # Step 7: Run the Bruno end-to-end collection against the running app (CLI must run from the collection root)
       - name: Run Bruno e2e tests
         working-directory: examples/${{ matrix.module }}/bruno
         run: npx --yes @usebruno/cli run . --env Local
@@ -93,9 +90,7 @@ jobs:
         if: failure()
         run: cat app.log
 
-      # Step 9: Always stop the background app so it never lingers on the runner.
-      #         bootRun forks a separate JVM via the Gradle daemon, so we kill by
-      #         port rather than by the launcher PID.
+      # Step 9: Always stop the background app so it never lingers on the runner (kill by port, not launcher PID)
       - name: Stop application
         if: always()
         run: |
