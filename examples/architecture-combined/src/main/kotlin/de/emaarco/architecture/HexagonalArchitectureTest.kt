@@ -1,5 +1,6 @@
 package de.emaarco.architecture
 
+import com.tngtech.archunit.core.domain.JavaClass.Predicates.INTERFACES
 import com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage
 import com.tngtech.archunit.core.importer.ClassFileImporter
 import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests
@@ -170,6 +171,23 @@ abstract class HexagonalArchitectureTest(
                 .resideInAPackage("..application.service..")
                 .because("Application services should not depend on each other")
                 .check(productionClasses)
+        }
+
+        @Test
+        fun `application service should not use any inbound port`() {
+            ArchRuleDefinition
+                .noClasses()
+                .that()
+                .resideInAPackage("..application.service..")
+                .should()
+                .accessClassesThat(
+                    resideInAPackage("..application.port.inbound..").and(INTERFACES),
+                ).because(
+                    "A service implements its own use-case but must never call or instantiate another " +
+                        "use-case; only the inbound *port interfaces* are forbidden ('access' = method " +
+                        "and constructor calls), so a service may still use its own use-case's nested " +
+                        "Command / Query data types",
+                ).check(productionClasses)
         }
     }
 
