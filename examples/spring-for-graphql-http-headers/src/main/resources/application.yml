@@ -4,7 +4,14 @@ spring:
     graphiql:
       enabled: true
       path: /graphiql
-    path: /api/graphql
+    http:
+      path: /api/graphql
 
 server:
   port: 8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

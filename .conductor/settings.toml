@@ -1,0 +1,24 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+run_mode = "nonconcurrent"
+
+# --- Boot an app ---------------------------------------------------------
+
+[scripts.run.app-headers]
+command = "./gradlew :examples:spring-for-graphql-http-headers:bootRun"
+icon = "server"
+
+[scripts.run.app-fragments]
+command = "./gradlew :examples:spring-for-graphql-fragment-source:bootRun"
+icon = "server"
+
+# --- Run the Bruno e2e smoke tests against a running app -----------------
+
+[scripts.run.smoke-headers]
+command = "cd examples/spring-for-graphql-http-headers/bruno && npx --yes @usebruno/cli run . --env Local"
+icon = "test-tube"
+
+[scripts.run.smoke-fragments]
+command = "cd examples/spring-for-graphql-fragment-source/bruno && npx --yes @usebruno/cli run . --env Local"
+icon = "test-tube"

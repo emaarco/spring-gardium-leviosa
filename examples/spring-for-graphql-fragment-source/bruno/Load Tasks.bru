@@ -1,7 +1,7 @@
 meta {
-  name: Get Tasks
+  name: Load Tasks
   type: graphql
-  seq: 2
+  seq: 1
 }
 
 post {
@@ -29,12 +29,13 @@ tests {
   test("no GraphQL errors", function () {
     expect(res.body.errors).to.equal(undefined);
   });
-  test("the task created in the previous request is returned", function () {
-    const createdId = bru.getVar("createdTaskId");
+  test("returns the 5 tasks seeded at startup", function () {
     const tasks = res.body.data.tasks;
     expect(tasks).to.be.an("array");
-    const match = tasks.find(function (t) { return t.id === createdId; });
-    expect(match, "created task should be returned by the tasks query").to.not.equal(undefined);
-    expect(match.title).to.equal("test");
+    expect(tasks.length).to.equal(5);
+    const titles = tasks.map(function (t) { return t.title; });
+    for (let i = 1; i <= 5; i++) {
+      expect(titles, "should contain Task " + i).to.include("Task " + i);
+    }
   });
 }

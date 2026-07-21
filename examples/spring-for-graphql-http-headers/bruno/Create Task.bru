@@ -1,17 +1,17 @@
 meta {
   name: Create Task
   type: graphql
-  seq: 3
+  seq: 1
 }
 
 post {
-  url: http://localhost:8081/api/graphql
+  url: {{baseUrl}}/api/graphql
   body: graphql
   auth: none
 }
 
 headers {
-  x-user-id: user123
+  x-user-id: {{userId}}
 }
 
 body:graphql {
@@ -22,5 +22,25 @@ body:graphql {
       description
     }
   }
-  
+}
+
+script:post-response {
+  if (res.body.data && res.body.data.addTask) {
+    bru.setVar("createdTaskId", res.body.data.addTask.id);
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("no GraphQL errors", function () {
+    expect(res.body.errors).to.equal(undefined);
+  });
+  test("task is created and echoed back", function () {
+    expect(res.body.data.addTask.id).to.be.a("string");
+    expect(res.body.data.addTask.title).to.equal("test");
+    expect(res.body.data.addTask.description).to.equal("test2");
+  });
 }
