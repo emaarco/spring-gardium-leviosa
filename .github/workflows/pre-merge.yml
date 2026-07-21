@@ -18,13 +18,75 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-      # Step 3: Set up JDK 21
-      - name: Set up JDK 21
+      # Step 3: Set up JDK 25
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
 
       # Step 4: Run Gradle build
       - name: Run Gradle Build
         run: ./gradlew build
+
+  e2e:
+    name: E2E (Bruno) - ${{ matrix.module }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { module: spring-for-graphql-http-headers, port: 8081 }
+          - { module: spring-for-graphql-fragment-source, port: 8082 }
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Gradle
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      # Step 3: Set up JDK 25
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+
+      # Step 4: Set up Node (for the Bruno CLI via npx)
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Step 5: Boot the Spring app in the background
+      - name: Start application
+        run: nohup ./gradlew :examples:${{ matrix.module }}:bootRun > app.log 2>&1 &
+
+      # Step 6: Wait until the app reports healthy (poll /actuator/health)
+      - name: Wait for health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf "http://localhost:${{ matrix.port }}/actuator/health" | grep -q '"status":"UP"'; then
+              echo "Application is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Application did not become healthy in time"
+          cat app.log
+          exit 1
+
+      # Step 7: Run the Bruno end-to-end collection against the running app
+      #         (the CLI must be invoked from the collection root)
+      - name: Run Bruno e2e tests
+        working-directory: examples/${{ matrix.module }}/bruno
+        run: npx --yes @usebruno/cli run . --env Local
+
+      # Step 8: Surface the application log if anything above failed
+      - name: Dump application log on failure
+        if: failure()
+        run: cat app.log

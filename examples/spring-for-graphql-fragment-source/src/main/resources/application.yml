@@ -3,7 +3,15 @@ spring:
     graphiql:
       enabled: true
       path: /graphiql
-    path: /api/graphql
+    http:
+      path: /api/graphql
 
 server:
   port: 8082
+
+# Exposes /actuator/health so CI / Conductor can poll readiness before running e2e tests
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
