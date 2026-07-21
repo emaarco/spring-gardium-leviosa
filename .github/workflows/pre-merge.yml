@@ -66,10 +66,12 @@ jobs:
       - name: Start application
         run: nohup ./gradlew :examples:${{ matrix.module }}:bootRun > app.log 2>&1 &
 
-      # Step 6: Wait until the app reports healthy (poll /actuator/health)
+      # Step 6: Wait until the app reports healthy (poll /actuator/health).
+      #         The e2e job runs with a cold Gradle cache, so the first bootRun
+      #         also compiles the module - allow a generous budget (90 x 2s).
       - name: Wait for health
         run: |
-          for i in $(seq 1 60); do
+          for i in $(seq 1 90); do
             if curl -sf "http://localhost:${{ matrix.port }}/actuator/health" | grep -q '"status":"UP"'; then
               echo "Application is up"
               exit 0
@@ -90,3 +92,17 @@ jobs:
       - name: Dump application log on failure
         if: failure()
         run: cat app.log
+
+      # Step 9: Always stop the background app so it never lingers on the runner.
+      #         bootRun forks a separate JVM via the Gradle daemon, so we kill by
+      #         port rather than by the launcher PID.
+      - name: Stop application
+        if: always()
+        run: |
+          pid=$(lsof -ti tcp:${{ matrix.port }} || true)
+          if [ -n "$pid" ]; then
+            echo "Stopping application (pid $pid)"
+            kill $pid || true
+          else
+            echo "No application process to stop"
+          fi
