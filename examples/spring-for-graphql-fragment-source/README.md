@@ -100,3 +100,19 @@ class LoadTasksControllerTest {
 
 With this setup, you can easily adapt the fragment locations by modifying the `documentSource` configuration in
 `GraphQlTestConfiguration`. Happy coding! 🎉
+
+## 🧬 Bonus: Mutation testing (pitest)
+
+Because this is the one module with a real **behavioural** test, it also hosts a hands-on
+**mutation testing** spike with [pitest](https://pitest.org). Mutation testing measures *test
+quality* — would a test actually *catch* a bug — instead of mere line coverage.
+
+```bash
+# JDK 25 default toolchain is lowered to 21 for the spike (see the doc for why)
+./gradlew :examples:spring-for-graphql-fragment-source:pitest -PjavaToolchainVersion=21
+# report → build/reports/pitest/index.html
+```
+
+The full write-up — what it is, what value it adds, how it's wired up, a concrete
+survived-mutant we deliberately killed (58 % → 67 % mutation score), and the Kotlin-synthetics /
+JVM-25 pitfalls — lives in **[docs/mutation-testing.md](docs/mutation-testing.md)**.
