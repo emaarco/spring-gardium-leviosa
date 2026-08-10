@@ -11,6 +11,8 @@ archunit_version = "1.4.2"
 kotlin_mockito_version = "6.3.0"
 ktlint_gradle_version = "14.2.0"
 konsist_version = "0.17.3"
+pitest_plugin_version = "1.19.0"
+pitest_junit5_version = "1.2.2"
 
 [libraries]
 web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "spring_version" }
@@ -35,6 +37,9 @@ spring_mockk = { module = "com.ninja-squad:springmockk", version.ref = "spring_m
 # Kotlin
 kotlin_logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin_logging_version" }
 
+# Mutation testing (pitest) — used only by the spring-for-graphql-fragment-source spike
+pitest_junit5 = { module = "org.pitest:pitest-junit5-plugin", version.ref = "pitest_junit5_version" }
+
 [bundles]
 defaultService = ["kotlin_logging", "aop", "devtools", "actuator", "web"]
 graphql = ["graphql", "webflux"]
@@ -48,3 +53,4 @@ kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotl
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin_version" }
 springframework = { id = "org.springframework.boot", version.ref = "spring_boot_plugin_version" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint_gradle_version" }
+pitest = { id = "info.solidsoft.pitest", version.ref = "pitest_plugin_version" }

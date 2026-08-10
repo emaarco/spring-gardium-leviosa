@@ -59,16 +59,24 @@ subprojects {
         version.set("1.5.0")
     }
 
+    /**
+     * The build targets a modern JVM by default. Some tooling still lags behind the newest
+     * class-file version — most notably pitest/ASM during the mutation-testing spike (see the
+     * README in :examples:spring-for-graphql-fragment-source). Lower the toolchain for a single
+     * invocation without touching this file via, e.g. `-PjavaToolchainVersion=21`.
+     */
+    val javaToolchainVersion = (findProperty("javaToolchainVersion") as String? ?: "25").toInt()
+
     java {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(25))
+            languageVersion.set(JavaLanguageVersion.of(javaToolchainVersion))
         }
     }
 
     tasks.withType<KotlinCompile>().configureEach {
         println("Configuring $name in project ${project.name}...")
         compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25)
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(javaToolchainVersion.toString()))
             freeCompilerArgs.add("-Xjsr305=strict")
         }
     }
