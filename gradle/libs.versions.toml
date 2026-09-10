@@ -1,18 +1,18 @@
 [versions]
-spring_version = "4.1.0"
-spring_boot_plugin_version = "4.1.0"
+spring_version = "4.1.1"
+spring_boot_plugin_version = "4.1.1"
 mockk_version = "1.14.11"
 spring_mockk_version = "5.0.1"
-spring_graphql_test_version = "2.0.4"
+spring_graphql_test_version = "2.0.5"
 kotlin_version = "2.4.10"
 kotlin_logging_version = "8.0.4"
 mockito_version = "5.23.0"
-archunit_version = "1.4.2"
+archunit_version = "1.5.0"
 kotlin_mockito_version = "6.3.0"
 ktlint_gradle_version = "14.2.0"
 konsist_version = "0.17.3"
 pitest_plugin_version = "1.19.0"
-pitest_junit5_version = "1.2.2"
+pitest_junit5_version = "1.2.3"
 
 [libraries]
 web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "spring_version" }
