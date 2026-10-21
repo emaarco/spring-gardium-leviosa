@@ -15,12 +15,14 @@ class HotelAvailableRoomsDataLoader(
 
     @BatchMapping(typeName = "Hotel", field = "availableRooms")
     fun availableRooms(hotels: List<HotelDto>): List<List<RoomOfferDto>> {
-        val offersPerStay =
-            hotels
-                .groupBy({ it.stay }, { HotelId(it.id) })
-                .mapValues { (stay, hotelIds) -> loadOffersPerHotel(hotelIds.toSet(), stay) }
+        val offersPerStay = loadOffersPerStay(hotels)
         return hotels.map { offersPerStay.getValue(it.stay)[HotelId(it.id)].orEmpty() }
     }
+
+    private fun loadOffersPerStay(hotels: List<HotelDto>): Map<Stay, Map<HotelId, List<RoomOfferDto>>> =
+        hotels
+            .groupBy({ it.stay }, { HotelId(it.id) })
+            .mapValues { (stay, hotelIds) -> loadOffersPerHotel(hotelIds.toSet(), stay) }
 
     private fun loadOffersPerHotel(
         hotelIds: Set<HotelId>,
