@@ -1,0 +1,16 @@
+type Query {
+    hotelSearch(city: String!, checkIn: String!, checkOut: String!): [Hotel!]!
+}
+
+type Hotel {
+    id: ID!
+    name: String!
+    stars: Int!
+    availableRooms: [RoomOffer!]
+}
+
+type RoomOffer {
+    roomType: String!
+    pricePerNightInEuro: Int!
+    totalPriceInEuro: Int!
+}

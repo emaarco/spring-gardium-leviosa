@@ -1,0 +1,12 @@
+query hotelSearch($city: String!, $checkIn: String!, $checkOut: String!) {
+    hotelSearch(city: $city, checkIn: $checkIn, checkOut: $checkOut) {
+        id
+        name
+        stars
+        availableRooms {
+            roomType
+            pricePerNightInEuro
+            totalPriceInEuro
+        }
+    }
+}

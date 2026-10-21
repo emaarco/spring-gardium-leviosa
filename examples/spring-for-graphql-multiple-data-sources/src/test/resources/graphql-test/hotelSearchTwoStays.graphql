@@ -1,0 +1,14 @@
+query hotelSearchTwoStays($city: String!) {
+    firstWeekend: hotelSearch(city: $city, checkIn: "2026-12-11", checkOut: "2026-12-13") {
+        name
+        availableRooms {
+            roomType
+        }
+    }
+    secondWeekend: hotelSearch(city: $city, checkIn: "2026-12-18", checkOut: "2026-12-20") {
+        name
+        availableRooms {
+            roomType
+        }
+    }
+}
