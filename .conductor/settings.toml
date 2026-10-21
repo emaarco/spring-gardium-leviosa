@@ -13,6 +13,10 @@ icon = "server"
 command = "./gradlew :examples:spring-for-graphql-fragment-source:bootRun"
 icon = "server"
 
+[scripts.run.app-multiple-data-sources]
+command = "./gradlew :examples:spring-for-graphql-multiple-data-sources:bootRun"
+icon = "server"
+
 # --- Run the Bruno e2e smoke tests against a running app -----------------
 
 [scripts.run.smoke-headers]
@@ -21,4 +25,8 @@ icon = "test-tube"
 
 [scripts.run.smoke-fragments]
 command = "cd examples/spring-for-graphql-fragment-source/bruno && npx --yes @usebruno/cli run . --env Local"
+icon = "test-tube"
+
+[scripts.run.smoke-multiple-data-sources]
+command = "cd examples/spring-for-graphql-multiple-data-sources/bruno && npx --yes @usebruno/cli run . --env Local"
 icon = "test-tube"

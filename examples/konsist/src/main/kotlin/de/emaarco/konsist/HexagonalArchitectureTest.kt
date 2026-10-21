@@ -111,8 +111,9 @@ abstract class HexagonalArchitectureTest(
         @Test
         fun `in adapters should only offer one use-case or query`() {
             Konsist
-                .scopeFromPackage("$rootPackage.adapter.inbound..")
+                .scopeFromProduction()
                 .files
+                .filter { it.hasPackage("$rootPackage.adapter.inbound..") }
                 .filterNot { it.hasPackage("$rootPackage.adapter.inbound.shared") }
                 .assertTrue { adapter ->
                     val allImports = adapter.imports.map { it.name }

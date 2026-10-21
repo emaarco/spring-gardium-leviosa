@@ -1,0 +1,54 @@
+meta {
+  name: Search Hotels
+  type: graphql
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/graphql
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  query hotelSearch($city: String!, $checkIn: String!, $checkOut: String!) {
+    hotelSearch(city: $city, checkIn: $checkIn, checkOut: $checkOut) {
+      name
+      stars
+      availableRooms {
+        roomType
+        pricePerNightInEuro
+        totalPriceInEuro
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "city": "München",
+    "checkIn": "2026-12-11",
+    "checkOut": "2026-12-13"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("no GraphQL errors", function () {
+    expect(res.body.errors).to.equal(undefined);
+  });
+  test("returns the Munich hotels sorted by name", function () {
+    const names = res.body.data.hotelSearch.map(function (h) { return h.name; });
+    expect(names).to.deep.equal(["Hotel Bayerischer Hof", "Hotel Isarblick", "Pension am Viktualienmarkt"]);
+  });
+  test("merges several offers of the booking engine into one hotel", function () {
+    const rooms = res.body.data.hotelSearch[0].availableRooms.map(function (r) { return r.roomType; });
+    expect(rooms).to.deep.equal(["Doppelzimmer", "Suite"]);
+  });
+  test("returns an empty list for a sold-out hotel", function () {
+    expect(res.body.data.hotelSearch[2].availableRooms).to.deep.equal([]);
+  });
+}

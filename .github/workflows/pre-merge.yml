@@ -39,6 +39,7 @@ jobs:
         include:
           - { module: spring-for-graphql-http-headers, port: 8081 }
           - { module: spring-for-graphql-fragment-source, port: 8082 }
+          - { module: spring-for-graphql-multiple-data-sources, port: 8083 }
 
     steps:
       # Step 1: Checkout code
