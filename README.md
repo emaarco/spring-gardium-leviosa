@@ -19,17 +19,18 @@ The repository is organized as follows:
 
 ## 🚀 Current Examples
 
-- **`archunit`**: Contains architecture tests using ArchUnit, a library for checking the architecture of Java
-  codebases (see [more](examples/archunit/README.md)).
-- **`/konsist`**: Contains architecture tests using Konsist, a Kotlin library for enforcing coding guidelines and
-  architecture rules (see [more](examples/konsist/README.md)).
-- **`/architecture-combined`**: A common module a service depends on to get one combined suite — ArchUnit and
-  Konsist together, each enforcing the rules it is best at (see [more](examples/architecture-combined/README.md)).
-- **`/spring-*`**: Various Spring Boot examples demonstrating best-practices or solutions to different challenges.
-- **`/spring-for-graphql-multiple-data-sources`**: A hotel platform that combines a content provider, a booking engine
-  and a review platform behind one GraphQL schema: a search using `@BatchMapping` to avoid N+1 calls, and a detail page
-  resolving each field from its own source in parallel
-  (see [more](examples/spring-for-graphql-multiple-data-sources/README.md)).
+- **`/archunit`**: Architecture tests using ArchUnit, a library for checking the architecture of Java codebases
+  (see [more](examples/archunit/README.md)).
+- **`/konsist`**: Architecture tests using Konsist, a Kotlin library for enforcing coding guidelines and architecture
+  rules (see [more](examples/konsist/README.md)).
+- **`/architecture-combined`**: A common module a service depends on to get one combined suite of ArchUnit and Konsist,
+  each enforcing the rules it is best at (see [more](examples/architecture-combined/README.md)).
+- **`/spring-for-graphql-http-headers`**: Accessing HTTP headers in Spring for GraphQL with a custom interceptor
+  (see [more](examples/spring-for-graphql-http-headers/README.md)).
+- **`/spring-for-graphql-fragment-source`**: Loading GraphQL fragments from custom locations in tests with a custom
+  `DocumentSource` (see [more](examples/spring-for-graphql-fragment-source/README.md)).
+- **`/spring-for-graphql-multiple-data-sources`**: Combining several data sources behind one GraphQL schema with
+  `@SchemaMapping` and `@BatchMapping` (see [more](examples/spring-for-graphql-multiple-data-sources/README.md)).
 
 ## 🌌 License
 
