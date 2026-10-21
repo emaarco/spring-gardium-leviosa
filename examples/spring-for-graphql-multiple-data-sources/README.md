@@ -95,7 +95,7 @@ Remove `availableRooms` from the query and that log line disappears.
 ```mermaid
 sequenceDiagram
     actor Client
-    participant Engine as Spring for GraphQL
+    participant Engine as Spring for GraphQL<br/>(graphql-java engine)
     participant Controller as HotelSearchController
     participant Search as SearchHotelsService
     participant Content as HotelContentAdapter<br/>(content provider)
@@ -122,8 +122,13 @@ sequenceDiagram
         end
         Loader-->>Engine: one offer list per hotel, in key order
     end
+    Note over Engine: graphql-java puts every resolved value at its field path<br/>and serialises the tree into data and errors
     Engine-->>Client: one merged response
 ```
+
+Spring for GraphQL registers every annotated controller method as a graphql-java `DataFetcher` for one schema field.
+graphql-java walks the selection set, calls these fetchers and assembles the response tree. The controllers only
+return parts of it.
 
 1. `@QueryMapping hotelSearch` only loads the hotels. It does **not** build the full result upfront.
 2. Spring for GraphQL resolves every selected field of `Hotel`. `id`, `name` and `stars` are plain properties of
