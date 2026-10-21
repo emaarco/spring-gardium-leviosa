@@ -7,7 +7,7 @@ data class Stay(
     val checkOut: LocalDate,
 ) {
     init {
-        require(checkIn < checkOut) { "Check-in ($checkIn) must be before check-out ($checkOut)" }
+        if (checkIn >= checkOut) throw InvalidStayException("Check-in ($checkIn) must be before check-out ($checkOut)")
     }
 
     fun nights(): List<LocalDate> = checkIn.datesUntil(checkOut).toList()

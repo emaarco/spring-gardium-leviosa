@@ -26,8 +26,9 @@ The repository is organized as follows:
 - **`/architecture-combined`**: A common module a service depends on to get one combined suite — ArchUnit and
   Konsist together, each enforcing the rules it is best at (see [more](examples/architecture-combined/README.md)).
 - **`/spring-*`**: Various Spring Boot examples demonstrating best-practices or solutions to different challenges.
-- **`/spring-for-graphql-multiple-data-sources`**: A hotel search that combines a content provider and a booking engine
-  in one GraphQL query, using `@BatchMapping` to avoid N+1 calls
+- **`/spring-for-graphql-multiple-data-sources`**: A hotel platform that combines a content provider, a booking engine
+  and a review platform behind one GraphQL schema: a search using `@BatchMapping` to avoid N+1 calls, and a detail page
+  resolving each field from its own source in parallel
   (see [more](examples/spring-for-graphql-multiple-data-sources/README.md)).
 
 ## 🌌 License

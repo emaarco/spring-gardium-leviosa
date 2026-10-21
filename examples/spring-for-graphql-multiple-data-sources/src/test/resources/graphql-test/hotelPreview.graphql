@@ -1,0 +1,6 @@
+query hotelPreview($id: ID!) {
+    hotel(id: $id) {
+        name
+        stars
+    }
+}

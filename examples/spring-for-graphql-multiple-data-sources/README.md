@@ -1,24 +1,28 @@
 # 🏨 Combining Multiple Data Sources in One Spring-for-GraphQL Query 🌐
 
-This example shows how a single GraphQL query returns one nested result built from **two independent data sources**,
-and how Spring for GraphQL makes sure the expensive source is only asked when needed and then only once per request
-instead of once per item.
+This example shows how a single GraphQL query returns one nested result built from **independent data sources**. Each
+source is only asked when its fields are selected. Lists are loaded in bulk instead of once per item, and the fields of
+a single object are loaded from different sources in parallel.
 
 ## ✨ Use-Case
 
-A hotel search. Every hotel platform combines two systems that are separated in practice:
+A hotel platform. It combines three systems that are separated in practice:
 
-| Field                      | Data source        | Characteristics                                                    |
-|----------------------------|--------------------|--------------------------------------------------------------------|
-| `id`, `name`, `stars`      | **Content provider** (`HotelContentAdapter`) | master data, changes rarely, cheap to read |
-| `availableRooms { … }`     | **Booking engine** (`BookingEngineAdapter`)  | availability & prices for a stay, volatile, expensive (rate-limited API) |
+| Data source                                     | Owns                                        | Characteristics                                   |
+|-------------------------------------------------|---------------------------------------------|---------------------------------------------------|
+| **Content provider** (`HotelContentAdapter`)    | `id`, `name`, `stars`                       | master data, changes rarely, cheap to read        |
+| **Booking engine** (`BookingEngineAdapter`)     | `availableRooms`                            | availability & prices for a stay, volatile, expensive (rate-limited API) |
+| **Review platform** (`ReviewPlatformAdapter`)   | `rating`, `reviews`                         | external platform, independent of the other two   |
 
-Both sources are linked by the hotel id. A result list or a map view only needs the master data, so the booking engine
-should not be called at all. A detail list with prices needs both, so the booking engine should be called **once for
-all hotels**, not once per hotel (the classic N+1 problem).
+All sources are linked by the hotel id. Two queries cover the two screens every hotel platform has:
 
-Both sources are deterministic in-memory fakes. This is a deliberate demo setup: no external accounts, no extra
-infrastructure, and no GraphQL federation, because both sources are aggregated behind one schema in one service.
+| Query                              | Screen        | Shape                                         | Technique                                    |
+|------------------------------------|---------------|-----------------------------------------------|----------------------------------------------|
+| `hotelSearch(city, checkIn, checkOut)` | result list | many hotels, one expensive field each       | `@BatchMapping`: one call for all hotels     |
+| `hotel(id)`                        | detail page   | one hotel, each property from its own source  | `@SchemaMapping` per field, in parallel      |
+
+All sources are deterministic in-memory fakes. This is a deliberate demo setup: no external accounts, no extra
+infrastructure, and no GraphQL federation, because all sources are aggregated behind one schema in one service.
 
 ## 🚀 Run it
 
@@ -33,7 +37,26 @@ infrastructure, and no GraphQL federation, because both sources are aggregated b
 cd examples/spring-for-graphql-multiple-data-sources/bruno && npx --yes @usebruno/cli run . --env Local
 ```
 
-## 🔎 Example
+## 🧱 Hexagonal structure
+
+Every source sits behind its own outbound port, and every GraphQL resolver talks to exactly one use-case. The
+architecture suite (`ArchitectureTest`) enforces this, so a resolver can never reach into a second source.
+
+| Inbound adapter (GraphQL)                                              | Inbound port              | Service                     | Outbound port          | Outbound adapter (source) |
+|------------------------------------------------------------------------|---------------------------|-----------------------------|------------------------|---------------------------|
+| `HotelSearchController`                                                | `SearchHotelsQuery`       | `SearchHotelsService`       | `HotelContentPort`     | `HotelContentAdapter`     |
+| `HotelDetailsController`                                               | `LoadHotelQuery`          | `LoadHotelService`          | `HotelContentPort`     | `HotelContentAdapter`     |
+| `HotelAvailableRoomsDataLoader`, `HotelDetailsAvailableRoomsController` | `LoadAvailableRoomsQuery` | `LoadAvailableRoomsService` | `RoomAvailabilityPort` | `BookingEngineAdapter`    |
+| `HotelReviewsController`                                               | `LoadHotelReviewsQuery`   | `LoadHotelReviewsService`   | `ReviewPlatformPort`   | `ReviewPlatformAdapter`   |
+
+Both queries reuse the same `LoadAvailableRoomsQuery` use-case and only differ in the GraphQL adapter in front of it.
+Replacing an in-memory fake with a real HTTP client only touches its outbound adapter.
+
+Spring for GraphQL registers every annotated controller method as a graphql-java `DataFetcher` for one schema field.
+graphql-java walks the selection set, calls these fetchers and assembles the response tree. The controllers only
+return parts of it.
+
+## 🔎 Query 1: `hotelSearch`, the result list
 
 ```graphql
 query hotelSearch($city: String!, $checkIn: String!, $checkOut: String!) {
@@ -90,7 +113,7 @@ BookingEngineAdapter : Booking engine requested for 3 hotel(s) and Stay(checkIn=
 
 Remove `availableRooms` from the query and that log line disappears.
 
-## 🔀 Data flow
+### Data flow
 
 ```mermaid
 sequenceDiagram
@@ -125,10 +148,6 @@ sequenceDiagram
     Note over Engine: graphql-java puts every resolved value at its field path<br/>and serialises the tree into data and errors
     Engine-->>Client: one merged response
 ```
-
-Spring for GraphQL registers every annotated controller method as a graphql-java `DataFetcher` for one schema field.
-graphql-java walks the selection set, calls these fetchers and assembles the response tree. The controllers only
-return parts of it.
 
 1. `@QueryMapping hotelSearch` only loads the hotels. It does **not** build the full result upfront.
 2. Spring for GraphQL resolves every selected field of `Hotel`. `id`, `name` and `stars` are plain properties of
@@ -167,16 +186,139 @@ groups the keys by stay: one booking engine call per stay. `HotelSearchControlle
 The batch method returns a `List` in key order instead of a `Map`. A hotel without offers is mapped to `[]` with
 `orEmpty()`, so no key can get lost because of a missing map entry.
 
+## 🏷️ Query 2: `hotel(id)`, the detail page
+
+One hotel, and every property comes from a different system: the master data from the content provider, rating and
+reviews from the review platform, the rooms from the booking engine.
+
+```graphql
+query hotelDetails($id: ID!, $checkIn: String!, $checkOut: String!) {
+  hotel(id: $id) {
+    name
+    stars
+    rating { score reviewCount }
+    reviews(limit: 2) { author score text writtenOn }
+    availableRooms(checkIn: $checkIn, checkOut: $checkOut) {
+      roomType
+      pricePerNightInEuro
+      totalPriceInEuro
+    }
+  }
+}
+```
+
+```json
+{ "id": "muc-bayerischer-hof", "checkIn": "2026-12-11", "checkOut": "2026-12-13" }
+```
+
+```json
+{
+  "data": {
+    "hotel": {
+      "name": "Hotel Bayerischer Hof",
+      "stars": 5,
+      "rating": { "score": 4.7, "reviewCount": 3 },
+      "reviews": [
+        { "author": "Clara", "score": 5, "text": "Breakfast on the roof terrace is a dream.", "writtenOn": "2026-10-18" },
+        { "author": "Ben", "score": 4, "text": "Great location, the room was a bit noisy.", "writtenOn": "2026-10-02" }
+      ],
+      "availableRooms": [
+        { "roomType": "Doppelzimmer", "pricePerNightInEuro": 320, "totalPriceInEuro": 640 },
+        { "roomType": "Suite", "pricePerNightInEuro": 890, "totalPriceInEuro": 1780 }
+      ]
+    }
+  }
+}
+```
+
+### Data flow
+
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Engine as Spring for GraphQL<br/>(graphql-java engine)
+    participant Details as HotelDetailsController
+    participant Reviews as HotelReviewsController
+    participant Rooms as HotelDetailsAvailableRoomsController
+    participant Content as HotelContentAdapter<br/>(content provider)
+    participant Platform as ReviewPlatformAdapter<br/>(review platform)
+    participant Booking as BookingEngineAdapter<br/>(booking engine)
+
+    Client->>Engine: hotel(id)
+    Engine->>Details: @QueryMapping hotel(id)
+    Details->>Content: LoadHotelQuery → findHotel(id)
+    Content-->>Details: hotel
+    Details-->>Engine: HotelDetailsDto
+    Note over Engine: name and stars are plain HotelDetailsDto properties
+    par only selected fields, each on its own virtual thread
+        Engine->>Reviews: @SchemaMapping rating
+        Reviews->>Platform: LoadHotelReviewsQuery → findRating(id)
+        Platform-->>Reviews: rating
+        Reviews-->>Engine: RatingDto
+    and
+        Engine->>Reviews: @SchemaMapping reviews(limit)
+        Reviews->>Platform: LoadHotelReviewsQuery → findLatestReviews(id, limit)
+        Platform-->>Reviews: reviews
+        Reviews-->>Engine: ReviewDto list
+    and
+        Engine->>Rooms: @SchemaMapping availableRooms(checkIn, checkOut)
+        Rooms->>Booking: LoadAvailableRoomsQuery → findAvailableRooms(id, stay)
+        Booking-->>Rooms: offers
+        Rooms-->>Engine: RoomOfferDto list
+    end
+    Engine-->>Client: one merged response
+```
+
+### What is different from the search
+
+- **`@SchemaMapping` is the right tool here.** There is only one parent object, so there is no N+1 problem to solve.
+  Batching would add complexity without saving a single call.
+- **Field arguments work.** `reviews(limit)` and `availableRooms(checkIn, checkOut)` take their arguments directly on
+  the field, which a `@BatchMapping` method cannot do.
+- **Its own GraphQL type.** `HotelDetails` is a separate type from the search's `Hotel`, because the same field
+  `availableRooms` has a different signature on each: with arguments on the detail page, without them in the search.
+- **One controller per source.** `HotelReviewsController` resolves both `rating` and `reviews`, because both come from
+  the review platform. A class-level `@SchemaMapping(typeName = "HotelDetails")` sets the type for all of its methods.
+- **Parallel loading without extra code.** With `spring.threads.virtual.enabled: true` in `application.yml`, Spring
+  Boot hands an executor to Spring for GraphQL, and blocking controller methods run on virtual threads. graphql-java
+  then resolves sibling fields at the same time. The log shows it:
+
+  ```
+  # spring.threads.virtual.enabled: false → one after the other on the request thread
+  [nio-8083-exec-2] ReviewPlatformAdapter : Review platform requested for the rating of muc-bayerischer-hof
+  [nio-8083-exec-2] ReviewPlatformAdapter : Review platform requested for the latest 2 reviews of muc-bayerischer-hof
+  [nio-8083-exec-2] BookingEngineAdapter  : Booking engine requested for 1 hotel(s) and Stay(...)
+
+  # spring.threads.virtual.enabled: true → in parallel on their own threads
+  [         task-4] ReviewPlatformAdapter : Review platform requested for the rating of muc-bayerischer-hof
+  [         task-5] ReviewPlatformAdapter : Review platform requested for the latest 2 reviews of muc-bayerischer-hof
+  [         task-6] BookingEngineAdapter  : Booking engine requested for 1 hotel(s) and Stay(...)
+  ```
+
+  The detail page then takes as long as its slowest source instead of the sum of all of them.
+
+## 🧭 Which technique when?
+
+| Technique                                   | Use it when                                                          | Example here        |
+|---------------------------------------------|----------------------------------------------------------------------|---------------------|
+| `@SchemaMapping` per field                  | the parent is a single object, or the source is cheap                | `hotel(id)`         |
+| `@BatchMapping`                             | the parent is a list and the source supports bulk requests           | `hotelSearch`       |
+| Assembling everything in the root resolver  | every client always needs every field anyway, or the sources must be read consistently in one go | – |
+
 ## ⚠️ Nullability and partial responses
 
-`availableRooms: [RoomOffer!]` is **nullable on purpose**, because the two cases mean different things:
+Fields from an unreliable source are **nullable on purpose**:
 
-- `[]`: the booking engine answered, and the hotel is **sold out** for the stay.
-- `null` plus an entry in `errors`: the booking engine **could not be asked**. The hotel list is still returned as a
-  partial response.
+- `availableRooms: []` means the booking engine answered, and the hotel is **sold out** for the stay.
+- `availableRooms: null` plus an entry in `errors` means the booking engine **could not be asked**. The hotels are still
+  returned as a partial response.
+- `rating: null` either means the hotel has no reviews yet or, together with an entry in `errors`, that the review
+  platform failed. The detail page still shows the master data and the rooms.
 
 With `[RoomOffer!]!` a failing booking engine would null the hotel, and because of `[Hotel!]!` the whole `hotelSearch`.
 One unreliable source would take down the whole result.
 
-An invalid stay (`checkIn >= checkOut` or a date that is not `yyyy-MM-dd`) is mapped to a `BAD_REQUEST` error by a
-`@GraphQlExceptionHandler` in `HotelSearchController`. Dates are ISO-8601 strings to avoid an extra scalar library.
+An invalid stay (`checkIn >= checkOut` or a date that is not `yyyy-MM-dd`) is rejected by the domain (`Stay` throws an
+`InvalidStayException`) and translated into a `BAD_REQUEST` error in a single place, the `InvalidStayExceptionResolver`.
+On the detail page this only affects `availableRooms`; name, rating and reviews are still returned. Dates are ISO-8601
+strings to avoid an extra scalar library.

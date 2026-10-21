@@ -1,5 +1,6 @@
 package de.emaarco.example.adapter.outbound
 
+import de.emaarco.example.domain.HotelId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -18,5 +19,15 @@ class HotelContentAdapterTest {
     @Test
     fun `unknown city has no hotels`() {
         assertThat(adapter.findHotelsIn("Atlantis")).isEmpty()
+    }
+
+    @Test
+    fun `finds a single hotel by id`() {
+        assertThat(adapter.findHotel(HotelId("muc-isarblick"))?.name?.value).isEqualTo("Hotel Isarblick")
+    }
+
+    @Test
+    fun `unknown hotel id has no hotel`() {
+        assertThat(adapter.findHotel(HotelId("unknown"))).isNull()
     }
 }

@@ -21,4 +21,6 @@ class HotelContentAdapter : HotelContentPort {
         hotels
             .filter { it.city.equals(city, ignoreCase = true) }
             .sortedBy { it.name.value }
+
+    override fun findHotel(hotelId: HotelId) = hotels.find { it.id == hotelId }
 }

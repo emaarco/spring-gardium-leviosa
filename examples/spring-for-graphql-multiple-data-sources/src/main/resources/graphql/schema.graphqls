@@ -1,5 +1,6 @@
 type Query {
     hotelSearch(city: String!, checkIn: String!, checkOut: String!): [Hotel!]!
+    hotel(id: ID!): HotelDetails
 }
 
 type Hotel {
@@ -9,8 +10,29 @@ type Hotel {
     availableRooms: [RoomOffer!]
 }
 
+type HotelDetails {
+    id: ID!
+    name: String!
+    stars: Int!
+    rating: Rating
+    reviews(limit: Int! = 3): [Review!]
+    availableRooms(checkIn: String!, checkOut: String!): [RoomOffer!]
+}
+
 type RoomOffer {
     roomType: String!
     pricePerNightInEuro: Int!
     totalPriceInEuro: Int!
+}
+
+type Rating {
+    score: Float!
+    reviewCount: Int!
+}
+
+type Review {
+    author: String!
+    score: Int!
+    text: String!
+    writtenOn: String!
 }

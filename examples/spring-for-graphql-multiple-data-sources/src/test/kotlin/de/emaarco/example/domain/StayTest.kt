@@ -1,7 +1,7 @@
 package de.emaarco.example.domain
 
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatIllegalArgumentException
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
@@ -16,8 +16,8 @@ class StayTest {
 
     @Test
     fun `check-out must be after check-in`() {
-        assertThatIllegalArgumentException().isThrownBy {
+        assertThatThrownBy {
             Stay(LocalDate.of(2026, 12, 11), LocalDate.of(2026, 12, 11))
-        }
+        }.isInstanceOf(InvalidStayException::class.java)
     }
 }

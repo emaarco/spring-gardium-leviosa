@@ -1,0 +1,65 @@
+meta {
+  name: Hotel Details
+  type: graphql
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/graphql
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  query hotelDetails($id: ID!, $checkIn: String!, $checkOut: String!) {
+    hotel(id: $id) {
+      name
+      stars
+      rating {
+        score
+        reviewCount
+      }
+      reviews(limit: 2) {
+        author
+        score
+        text
+        writtenOn
+      }
+      availableRooms(checkIn: $checkIn, checkOut: $checkOut) {
+        roomType
+        pricePerNightInEuro
+        totalPriceInEuro
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "id": "muc-bayerischer-hof",
+    "checkIn": "2026-12-11",
+    "checkOut": "2026-12-13"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("no GraphQL errors", function () {
+    expect(res.body.errors).to.equal(undefined);
+  });
+  test("takes the master data from the content provider", function () {
+    expect(res.body.data.hotel.name).to.equal("Hotel Bayerischer Hof");
+  });
+  test("takes rating and the latest reviews from the review platform", function () {
+    expect(res.body.data.hotel.rating).to.deep.equal({ score: 4.7, reviewCount: 3 });
+    const authors = res.body.data.hotel.reviews.map(function (r) { return r.author; });
+    expect(authors).to.deep.equal(["Clara", "Ben"]);
+  });
+  test("takes the available rooms from the booking engine", function () {
+    const rooms = res.body.data.hotel.availableRooms.map(function (r) { return r.roomType; });
+    expect(rooms).to.deep.equal(["Doppelzimmer", "Suite"]);
+  });
+}

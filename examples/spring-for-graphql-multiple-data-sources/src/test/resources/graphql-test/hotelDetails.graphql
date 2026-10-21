@@ -1,0 +1,21 @@
+query hotelDetails($id: ID!, $checkIn: String!, $checkOut: String!) {
+    hotel(id: $id) {
+        name
+        stars
+        rating {
+            score
+            reviewCount
+        }
+        reviews(limit: 2) {
+            author
+            score
+            text
+            writtenOn
+        }
+        availableRooms(checkIn: $checkIn, checkOut: $checkOut) {
+            roomType
+            pricePerNightInEuro
+            totalPriceInEuro
+        }
+    }
+}
