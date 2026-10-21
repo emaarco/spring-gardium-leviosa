@@ -92,12 +92,37 @@ Remove `availableRooms` from the query and that log line disappears.
 
 ## 🔀 Data flow
 
-```
-hotelSearch(city, checkIn, checkOut)            HotelSearchController      @QueryMapping
-  └─ SearchHotelsQuery → HotelContentPort       content provider           1 call
-       └─ List<HotelDto(id, name, stars, stay)>
-            └─ availableRooms                   HotelAvailableRoomsDataLoader  @BatchMapping
-                 └─ LoadAvailableRoomsQuery → RoomAvailabilityPort   booking engine  1 call per stay
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Engine as Spring for GraphQL
+    participant Controller as HotelSearchController
+    participant Search as SearchHotelsService
+    participant Content as HotelContentAdapter<br/>(content provider)
+    participant Loader as HotelAvailableRoomsDataLoader
+    participant Rooms as LoadAvailableRoomsService
+    participant Booking as BookingEngineAdapter<br/>(booking engine)
+
+    Client->>Engine: hotelSearch(city, checkIn, checkOut)
+    Engine->>Controller: @QueryMapping hotelSearch
+    Controller->>Search: searchHotels(city)
+    Search->>Content: findHotelsIn(city)
+    Content-->>Search: hotels
+    Search-->>Controller: hotels
+    Controller-->>Engine: one HotelDto per hotel, carrying the stay
+    Note over Engine: id, name and stars are plain HotelDto properties
+    opt availableRooms is selected
+        Note over Engine: the DataLoader collects the HotelDto keys of all hotels
+        Engine->>Loader: @BatchMapping availableRooms(all hotels)
+        loop once per stay
+            Loader->>Rooms: loadAvailableRooms(hotelIds, stay)
+            Rooms->>Booking: findAvailableRooms(hotelIds, stay)
+            Booking-->>Rooms: offers
+            Rooms-->>Loader: offers
+        end
+        Loader-->>Engine: one offer list per hotel, in key order
+    end
+    Engine-->>Client: one merged response
 ```
 
 1. `@QueryMapping hotelSearch` only loads the hotels. It does **not** build the full result upfront.
