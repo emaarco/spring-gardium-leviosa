@@ -20,6 +20,7 @@ class HotelDetailsController(
         @Argument id: String,
     ): HotelDetailsDto? {
         log.debug { "Received graphql-request to load hotel $id" }
-        return query.loadHotel(HotelId(id))?.let { HotelDetailsDto.from(it) }
+        val hotel = query.loadHotel(HotelId(id))
+        return hotel?.let { HotelDetailsDto.from(it) }
     }
 }

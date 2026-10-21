@@ -24,6 +24,7 @@ class HotelSearchController(
     ): List<HotelDto> {
         log.debug { "Received graphql-request to search hotels in $city" }
         val stay = Stay(LocalDate.parse(checkIn), LocalDate.parse(checkOut))
-        return query.searchHotels(city).map { HotelDto.from(it, stay) }
+        val hotels = query.searchHotels(city)
+        return hotels.map { HotelDto.from(it, stay) }
     }
 }
