@@ -9,7 +9,7 @@ class PodBroadcastHealthIndicator(
 ) : HealthIndicator {
 
     override fun health(): Health {
-        val listener = registry.getListenerContainer(PodBroadcastListener.LISTENER_ID)
+        val listener = registry.getListenerContainer(PodBroadcastKafkaListener.LISTENER_ID)
         val assignedPartitions = listener?.assignedPartitions.orEmpty()
         if (assignedPartitions.isEmpty()) {
             return Health.down().withDetail("reason", "waiting for the partitions of the broadcast topic").build()

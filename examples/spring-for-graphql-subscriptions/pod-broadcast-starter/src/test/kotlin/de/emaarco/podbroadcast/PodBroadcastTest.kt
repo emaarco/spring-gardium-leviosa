@@ -22,7 +22,7 @@ import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class PodBroadcasterTest {
+class PodBroadcastTest {
 
     private val kafka = EmbeddedKafkaKraftBroker(1, 1).apply { afterPropertiesSet() }
     private val pod1 = startPod("pod-1")
@@ -34,9 +34,9 @@ class PodBroadcasterTest {
     }
 
     @AfterEach
-    fun awaitStoppedReceivers() {
-        awaitReceivers(pod1, 0)
-        awaitReceivers(pod2, 0)
+    fun awaitStoppedSubscribers() {
+        awaitSubscribers(pod1, 0)
+        awaitSubscribers(pod2, 0)
     }
 
     @AfterAll
@@ -49,12 +49,12 @@ class PodBroadcasterTest {
     @Test
     fun `every pod receives the event that one pod published, including the publishing pod`() {
         runBlocking {
-            val onPod1 = async(Dispatchers.IO) { broadcaster(pod1).receive<Greeting>().first() }
-            val onPod2 = async(Dispatchers.IO) { broadcaster(pod2).receive<Greeting>().first() }
-            awaitReceivers(pod1, 1)
-            awaitReceivers(pod2, 1)
+            val onPod1 = async(Dispatchers.IO) { receiver(pod1).receive<Greeting>().first() }
+            val onPod2 = async(Dispatchers.IO) { receiver(pod2).receive<Greeting>().first() }
+            awaitSubscribers(pod1, 1)
+            awaitSubscribers(pod2, 1)
 
-            broadcaster(pod2).publishToAllPods("greeting-1", Greeting("hello from pod-2"))
+            publisher(pod2).publishToAllPods("greeting-1", Greeting("hello from pod-2"))
 
             withTimeout(10.seconds) {
                 assertThat(onPod1.await()).isEqualTo(Greeting("hello from pod-2"))
@@ -66,11 +66,11 @@ class PodBroadcasterTest {
     @Test
     fun `a receiver only gets the events of the type it asked for`() {
         runBlocking {
-            val greetings = async(Dispatchers.IO) { broadcaster(pod1).receive<Greeting>().first() }
-            awaitReceivers(pod1, 1)
+            val greetings = async(Dispatchers.IO) { receiver(pod1).receive<Greeting>().first() }
+            awaitSubscribers(pod1, 1)
 
-            broadcaster(pod2).publishToAllPods("farewell-1", Farewell("bye", 3))
-            broadcaster(pod2).publishToAllPods("greeting-2", Greeting("hello again"))
+            publisher(pod2).publishToAllPods("farewell-1", Farewell("bye", 3))
+            publisher(pod2).publishToAllPods("greeting-2", Greeting("hello again"))
 
             withTimeout(10.seconds) {
                 assertThat(greetings.await()).isEqualTo(Greeting("hello again"))
@@ -85,16 +85,18 @@ class PodBroadcasterTest {
             "--spring.kafka.bootstrap-servers=${kafka.brokersAsString}",
         )
 
-    private fun broadcaster(pod: ConfigurableApplicationContext) = pod.getBean(PodBroadcaster::class.java)
+    private fun publisher(pod: ConfigurableApplicationContext) = pod.getBean(PodBroadcastPublisher::class.java)
+
+    private fun receiver(pod: ConfigurableApplicationContext) = pod.getBean(PodBroadcastReceiver::class.java)
 
     private fun isReady(pod: ConfigurableApplicationContext) =
         pod.getBean(PodBroadcastHealthIndicator::class.java).health().status == Status.UP
 
-    private fun awaitReceivers(
+    private fun awaitSubscribers(
         pod: ConfigurableApplicationContext,
         count: Int,
     ) {
-        await atMost Duration.ofSeconds(10) until { broadcaster(pod).activeReceivers() == count }
+        await atMost Duration.ofSeconds(10) until { receiver(pod).activeSubscribers() == count }
     }
 
     data class Greeting(

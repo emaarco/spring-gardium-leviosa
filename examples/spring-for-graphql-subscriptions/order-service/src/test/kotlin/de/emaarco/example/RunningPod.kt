@@ -1,6 +1,6 @@
 package de.emaarco.example
 
-import de.emaarco.podbroadcast.PodBroadcaster
+import de.emaarco.podbroadcast.PodBroadcastReceiver
 import org.awaitility.kotlin.atMost
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.until
@@ -28,7 +28,7 @@ class RunningPod(
 
     private val port = context.environment.getRequiredProperty("local.server.port")
 
-    private val broadcaster = context.getBean(PodBroadcaster::class.java)
+    private val broadcastReceiver = context.getBean(PodBroadcastReceiver::class.java)
 
     private val httpTester =
         HttpGraphQlTester.create(WebTestClient.bindToServer().baseUrl("http://localhost:$port/api/graphql").build())
@@ -41,7 +41,7 @@ class RunningPod(
     }
 
     fun awaitActiveSubscriptions(count: Int) {
-        await atMost Duration.ofSeconds(10) until { broadcaster.activeReceivers() == count }
+        await atMost Duration.ofSeconds(10) until { broadcastReceiver.activeSubscribers() == count }
     }
 
     fun placeOrder(

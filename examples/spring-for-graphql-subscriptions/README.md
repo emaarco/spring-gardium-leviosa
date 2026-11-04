@@ -17,7 +17,7 @@ The Kafka part is not specific to orders, so it lives in a small Spring Boot sta
 
 | Module                                     | Contains                                                                                   |
 |--------------------------------------------|--------------------------------------------------------------------------------------------|
-| [`pod-broadcast-starter`](pod-broadcast-starter) | publish an event to all pods, receive the events of all pods as a Kotlin `Flow`, readiness check |
+| [`pod-broadcast-starter`](pod-broadcast-starter) | `PodBroadcastPublisher` sends an event to all pods, `PodBroadcastReceiver` streams the events of all pods as a Kotlin `Flow`, plus a readiness check |
 | [`order-service`](order-service)           | the GraphQL API, the order domain and one adapter that uses the starter                    |
 
 ## ✨ Use-Case
@@ -82,15 +82,16 @@ pod-broadcast:
 management.endpoint.health.group.readiness.include: readinessState,podBroadcast
 ```
 
-Everything else is one outbound adapter, `OrderStatusBroadcastAdapter`:
+Everything else is one outbound adapter, `OrderStatusBroadcastAdapter`. It publishes with `PodBroadcastPublisher` and
+receives with `PodBroadcastReceiver`:
 
 ```kotlin
 override fun broadcastToAllPods(change: OrderStatusChange) {
-    broadcaster.publishToAllPods(change.orderId.value, OrderStatusChangeMessage.from(change))
+    publisher.publishToAllPods(change.orderId.value, OrderStatusChangeMessage.from(change))
 }
 
 override fun changesOf(orderId: OrderId) =
-    broadcaster
+    receiver
         .receive<OrderStatusChangeMessage>()
         .filter { it.orderId == orderId.value }
         .map { it.toDomain() }
@@ -107,12 +108,22 @@ fun orderStatus(@Argument orderId: String): Flow<OrderStatusChangeDto> =
 
 ## ⚙️ What the starter does
 
-`PodBroadcastAutoConfiguration` registers four beans. Each one covers one building block of the pattern.
+`PodBroadcastAutoConfiguration` registers one bean per building block of the pattern:
+
+| Bean                          | Job                                                                                    |
+|-------------------------------|----------------------------------------------------------------------------------------|
+| `PodBroadcastPublisher`       | sends an event to the topic, so that every pod gets it                                 |
+| `PodBroadcastKafkaListener`   | reads the topic with a consumer group of its own and hands every event to the receiver |
+| `PodBroadcastReceiver`        | keeps the events of this pod in memory and streams them per type to every subscriber   |
+| `PodBroadcastHealthIndicator` | keeps the pod out of readiness until the listener can receive events                   |
+| `podBroadcastTopic`           | creates the topic with three partitions                                                |
+
+A service that only sends events uses the publisher, one that only reacts to them uses the receiver.
 
 ### 1. One consumer group per pod: broadcast instead of load balancing
 
 Kafka delivers every record to **one consumer per consumer group**. If all replicas share one group, which is the
-usual setup for work queues, only one random pod would see a change. `PodBroadcastListener` gives every pod its
+usual setup for work queues, only one random pod would see a change. `PodBroadcastKafkaListener` gives every pod its
 **own** group, `<spring.application.name>-<pod-broadcast.pod-name>`, so every pod gets every event:
 
 ```kotlin
@@ -139,21 +150,21 @@ freshly started pod has nothing to replay.
 
 ### 2. Every event takes the same path, even on the pod where it happened
 
-`PodBroadcaster.publishToAllPods` only sends to Kafka. The publishing pod receives its own event back like every other
+`PodBroadcastPublisher.publishToAllPods` only sends to Kafka. The publishing pod receives its own event back like every other
 pod. This keeps a single delivery path: no duplicates, no special case for "local", and the same order on every pod,
 because all events with the same key share a partition. The send waits for the broker's ack (`send(...).join()`), so
 an event that Kafka did not accept fails loudly instead of disappearing.
 
-The event is sent as JSON, with its class name in the header `pod-broadcast-event-type`. `receive<T>()` only emits
+The event is sent as JSON, with its class name in the header `pod-broadcast-event-type`. `PodBroadcastReceiver.receive<T>()` only emits
 events of type `T`, so one topic can carry several event types.
 
 ### 3. A local hub per pod
 
-`PodBroadcaster` keeps an in-memory `MutableSharedFlow`. The listener pushes every event into it, and every open
+`PodBroadcastReceiver` keeps an in-memory `MutableSharedFlow`. The listener pushes every event into it, and every open
 subscription collects from it:
 
 ```kotlin
-private val receivedEvents = MutableSharedFlow<ReceivedEvent>(extraBufferCapacity = 256, onBufferOverflow = DROP_OLDEST)
+private val eventsFromAllPods = MutableSharedFlow<ReceivedEvent>(extraBufferCapacity = 256, onBufferOverflow = DROP_OLDEST)
 ```
 
 - `tryEmit` never blocks the Kafka listener. A slow WebSocket client loses its oldest buffered events instead of
@@ -247,7 +258,7 @@ The simulated fulfillment reports its updates as Spring application events (`Ful
 
 | Test                                   | Proves                                                                                      |
 |----------------------------------------|---------------------------------------------------------------------------------------------|
-| `PodBroadcasterTest` (starter)         | two pods (two Spring contexts) + embedded Kafka: an event published on one pod reaches both pods, and a receiver only gets the events of its type |
+| `PodBroadcastTest` (starter)           | two pods (two Spring contexts) + embedded Kafka: an event published on one pod reaches both pods, and a receiver only gets the events of its type |
 | `MultiPodSubscriptionTest`             | two order-service pods + embedded Kafka: the client places an order on pod-2, subscribes on pod-1 and gets every status change. The same path works when both land on the same pod |
 | `OrderStatusControllerTest`            | the subscription streams every status change of the order (`@GraphQlTest`)                   |
 | `PlaceOrderControllerTest`             | the mutation returns the order with the id assigned by the server (`@GraphQlTest`)           |

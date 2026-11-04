@@ -1,12 +1,10 @@
 package de.emaarco.podbroadcast
 
-import de.emaarco.podbroadcast.PodBroadcaster.Companion.EVENT_TYPE_HEADER
-import de.emaarco.podbroadcast.PodBroadcaster.ReceivedEvent
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.annotation.KafkaListener
 
-class PodBroadcastListener(
-    private val broadcaster: PodBroadcaster,
+class PodBroadcastKafkaListener(
+    private val receiver: PodBroadcastReceiver,
     val topic: String,
     val consumerGroup: String,
 ) {
@@ -21,10 +19,10 @@ class PodBroadcastListener(
         val type =
             record
                 .headers()
-                .lastHeader(EVENT_TYPE_HEADER)
+                .lastHeader(PodBroadcastHeaders.EVENT_TYPE)
                 ?.value()
                 ?.decodeToString() ?: return
-        broadcaster.deliver(ReceivedEvent(type, record.value()))
+        receiver.deliver(type, record.value())
     }
 
     internal companion object {

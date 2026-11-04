@@ -20,18 +20,21 @@ class PodBroadcastAutoConfiguration {
         TopicBuilder.name(properties.topic).partitions(3).build()
 
     @Bean
-    fun podBroadcaster(
+    fun podBroadcastPublisher(
         kafkaTemplate: KafkaTemplate<String, String>,
         jsonMapper: JsonMapper,
         properties: PodBroadcastProperties,
-    ) = PodBroadcaster(kafkaTemplate, jsonMapper, properties.topic)
+    ) = PodBroadcastPublisher(kafkaTemplate, jsonMapper, properties.topic)
 
     @Bean
-    fun podBroadcastListener(
-        broadcaster: PodBroadcaster,
+    fun podBroadcastReceiver(jsonMapper: JsonMapper) = PodBroadcastReceiver(jsonMapper)
+
+    @Bean
+    fun podBroadcastKafkaListener(
+        receiver: PodBroadcastReceiver,
         properties: PodBroadcastProperties,
         @Value("\${spring.application.name}") applicationName: String,
-    ) = PodBroadcastListener(broadcaster, properties.topic, "$applicationName-${properties.podName}")
+    ) = PodBroadcastKafkaListener(receiver, properties.topic, "$applicationName-${properties.podName}")
 
     @Bean
     fun podBroadcastHealthIndicator(registry: KafkaListenerEndpointRegistry) = PodBroadcastHealthIndicator(registry)
