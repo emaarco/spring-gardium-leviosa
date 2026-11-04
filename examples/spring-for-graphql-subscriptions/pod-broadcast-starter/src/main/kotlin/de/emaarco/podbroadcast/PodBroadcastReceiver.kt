@@ -7,6 +7,10 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import tools.jackson.databind.json.JsonMapper
 
+/**
+ * Streams the events that any pod of this service published, filtered by type.
+ * Keeps no history: a subscriber only gets events that arrive after it started collecting.
+ */
 class PodBroadcastReceiver(
     private val jsonMapper: JsonMapper,
 ) {

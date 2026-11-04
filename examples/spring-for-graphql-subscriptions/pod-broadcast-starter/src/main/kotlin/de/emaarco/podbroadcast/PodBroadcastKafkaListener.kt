@@ -3,6 +3,10 @@ package de.emaarco.podbroadcast
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.annotation.KafkaListener
 
+/**
+ * Reads the broadcast topic with a consumer group of its own per pod, so that every pod gets every event,
+ * and hands each event to the [PodBroadcastReceiver] of this pod. Starts at the latest offset: only live events count.
+ */
 class PodBroadcastKafkaListener(
     private val receiver: PodBroadcastReceiver,
     val topic: String,

@@ -11,6 +11,11 @@ import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.KafkaTemplate
 import tools.jackson.databind.json.JsonMapper
 
+/**
+ * Registers everything a service needs to broadcast events to all of its pods:
+ * the topic, the [PodBroadcastPublisher], the [PodBroadcastReceiver], the [PodBroadcastKafkaListener]
+ * that connects both via Kafka, and the [PodBroadcastHealthIndicator] for readiness.
+ */
 @AutoConfiguration(after = [KafkaAutoConfiguration::class, JacksonAutoConfiguration::class])
 @EnableConfigurationProperties(PodBroadcastProperties::class)
 class PodBroadcastAutoConfiguration {
