@@ -1,5 +1,0 @@
-services:
-  kafka:
-    image: docker.io/apache/kafka:4.1.0
-    ports:
-      - "9092:9092"

@@ -1,0 +1,8 @@
+package de.emaarco.podbroadcast
+
+import org.springframework.boot.SpringBootConfiguration
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration
+
+@SpringBootConfiguration
+@EnableAutoConfiguration
+class PodBroadcastTestApplication

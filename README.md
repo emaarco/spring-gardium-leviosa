@@ -31,10 +31,8 @@ The repository is organized as follows:
   `DocumentSource` (see [more](examples/spring-for-graphql-fragment-source/README.md)).
 - **`/spring-for-graphql-multiple-data-sources`**: Combining several data sources behind one GraphQL schema with
   `@SchemaMapping` and `@BatchMapping` (see [more](examples/spring-for-graphql-multiple-data-sources/README.md)).
-- **`/spring-for-graphql-subscriptions-embedded`**: GraphQL subscriptions across several pods, with the Kafka fan-out
-  embedded in the service (see [more](examples/spring-for-graphql-subscriptions-embedded/README.md)).
-- **`/spring-for-graphql-subscriptions-sidecar`**: GraphQL subscriptions across several pods, with the Kafka fan-out
-  moved into a domain-agnostic sidecar (see [more](examples/spring-for-graphql-subscriptions-sidecar/README.md)).
+- **`/spring-for-graphql-subscriptions`**: GraphQL subscriptions across several pods, with the Kafka fan-out in a
+  reusable Spring Boot starter (see [more](examples/spring-for-graphql-subscriptions/README.md)).
 
 ## 🌌 License
 
