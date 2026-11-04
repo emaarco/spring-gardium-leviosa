@@ -19,7 +19,7 @@ server:
   port: 8084
 
 pod:
-  name: ${POD_NAME:pod-1}
+  name: ${POD_NAME:${HOSTNAME:pod-1}}
 
 pod-broadcast:
   pod-name: ${pod.name}

@@ -26,7 +26,7 @@ class PodBroadcastKafkaListener(
                 .lastHeader(PodBroadcastHeaders.EVENT_TYPE)
                 ?.value()
                 ?.decodeToString() ?: return
-        receiver.deliver(type, record.value())
+        receiver.deliver(type, record.key(), record.value())
     }
 
     internal companion object {

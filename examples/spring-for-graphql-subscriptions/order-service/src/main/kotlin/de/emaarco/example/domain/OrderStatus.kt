@@ -5,4 +5,7 @@ enum class OrderStatus {
     PAYMENT_CONFIRMED,
     READY_TO_SHIP,
     SHIPPED,
+    ;
+
+    val isFinal get() = this == SHIPPED
 }

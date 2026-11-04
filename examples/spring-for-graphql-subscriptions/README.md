@@ -68,7 +68,7 @@ block-beta
 |-------------------------------|--------------------------------------------------------------------------------------|
 | `PodBroadcastPublisher`       | sends an event to all pods and waits for Kafka's ack                                 |
 | `PodBroadcastKafkaListener`   | reads the topic with the consumer group `<app>-<pod-name>`, from `latest`            |
-| `PodBroadcastReceiver`        | in-memory `SharedFlow`, `receive<T>()` streams the events of type `T`                |
+| `PodBroadcastReceiver`        | in-memory `SharedFlow`, `receive<T>(key)` streams the events of type `T`, skips unreadable ones |
 | `PodBroadcastHealthIndicator` | `podBroadcast` is `DOWN` until the listener has partitions, so the pod is not ready  |
 
 Three rules make it reliable:
@@ -97,9 +97,13 @@ override fun broadcastToAllPods(change: OrderStatusChange) =
     publisher.publishToAllPods(change.orderId.value, OrderStatusChangeMessage.from(change))
 
 override fun changesOf(orderId: OrderId) =
-    receiver.receive<OrderStatusChangeMessage>().filter { it.orderId == orderId.value }.map { it.toDomain() }
+    receiver
+        .receive<OrderStatusChangeMessage>(key = orderId.value)
+        .mapNotNull { toDomainOrSkip(it) }
+        .transformWhile { change -> emit(change); !change.status.isFinal }
 ```
 
+`receive` filters by type and key before it parses any JSON. `transformWhile` ends the subscription after `SHIPPED`.
 The `@SubscriptionMapping` returns this `Flow` (needs `kotlinx-coroutines-reactor`). Everything else in the
 order-service is plain hexagonal code: controllers, use-cases, domain, and the simulated fulfillment.
 
@@ -133,7 +137,8 @@ Both multi-pod tests start two Spring contexts against an embedded Kafka, so the
 | Test                       | Proves                                                                                       |
 |----------------------------|----------------------------------------------------------------------------------------------|
 | `PodBroadcastTest`         | an event published on one pod reaches every pod; a receiver only gets its type               |
-| `MultiPodSubscriptionTest` | order on pod-2, subscription on pod-1 (and on the same pod): every status change arrives      |
+| `PodBroadcastReceiverTest` | filtering by key; an unreadable event is skipped and does not end the stream                 |
+| `MultiPodSubscriptionTest` | order on pod-2, subscription on pod-1 (and on the same pod): every change arrives, then the subscription ends |
 | other tests                | GraphQL slices, adapters, services, and the shared hexagonal architecture rules             |
 
 ## ⚖️ Good to know
@@ -141,7 +146,15 @@ Both multi-pod tests start two Spring contexts against an embedded Kafka, so the
 - **Live only.** A change that happens while no subscription is open is lost. Between `placeOrder` and the
   subscription there is such a gap. A real system subscribes first and then queries the current status from its
   database. This example has no database, so the fulfillment simply waits 10 seconds before its first step.
+- **Slow clients lose the oldest events.** The receiver buffers 256 events. A client that falls further behind misses
+  the oldest ones instead of slowing down every other subscription of the pod.
 - **Every pod reads everything.** Fine for notification-sized events. For big volumes, use a slim notification topic.
+- **Readiness depends on Kafka.** If the broker is down, no pod is ready, mutations included. That is on purpose: a pod
+  that cannot receive events would silently break its subscriptions.
+- **Publishing blocks until Kafka's ack.** A lost event fails loudly in the caller instead of disappearing.
+- **The type is the simple class name.** Keep it stable across releases, or old and new pods ignore each other's events.
+- **One consumer group per pod name.** Groups of stopped pods stay on the broker until `offsets.retention.minutes`
+  (7 days by default). Without `POD_NAME`, the pod name falls back to `HOSTNAME`, which is unique per container.
 - **Reconnects.** When a pod stops, its subscriptions end and the clients reconnect to another pod. No sticky sessions.
 - **Other brokers.** Anything with broadcast semantics works, e.g. Redis Pub/Sub or PostgreSQL `LISTEN/NOTIFY`. Only
   the starter would change.

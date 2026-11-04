@@ -36,10 +36,10 @@ class MultiPodSubscriptionTest {
     }
 
     @Test
-    fun `the client gets every status change although its order lives on pod-2 and its subscription on pod-1`() {
+    fun `the client gets every change until shipping although its order is on pod-2 and its subscription on pod-1`() {
         val orderId = pod2.placeOrder("Espresso machine", 1)
 
-        val statusChanges = pod1.trackOrder(orderId, expectedChanges = 3)
+        val statusChanges = pod1.trackOrderUntilItCompletes(orderId)
         pod1.awaitActiveSubscriptions(1)
 
         val changes = statusChanges.get(20, SECONDS)
@@ -51,7 +51,7 @@ class MultiPodSubscriptionTest {
     fun `the status changes take the same path when order and subscription are on the same pod`() {
         val orderId = pod1.placeOrder("Coffee beans", 3)
 
-        val statusChanges = pod1.trackOrder(orderId, expectedChanges = 3)
+        val statusChanges = pod1.trackOrderUntilItCompletes(orderId)
         pod1.awaitActiveSubscriptions(1)
 
         val changes = statusChanges.get(20, SECONDS)

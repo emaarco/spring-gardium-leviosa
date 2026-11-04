@@ -58,16 +58,12 @@ class RunningPod(
         return response.path("placeOrder.id").entity(String::class.java).get()
     }
 
-    fun trackOrder(
-        orderId: String,
-        expectedChanges: Long,
-    ): CompletableFuture<List<OrderStatusChangeView>> =
+    fun trackOrderUntilItCompletes(orderId: String): CompletableFuture<List<OrderStatusChangeView>> =
         webSocketTester
             .documentName("orderStatus")
             .variable("orderId", orderId)
             .executeSubscription()
             .toFlux("orderStatus", OrderStatusChangeView::class.java)
-            .take(expectedChanges)
             .collectList()
             .toFuture()
             .thenApply { requireNotNull(it) }

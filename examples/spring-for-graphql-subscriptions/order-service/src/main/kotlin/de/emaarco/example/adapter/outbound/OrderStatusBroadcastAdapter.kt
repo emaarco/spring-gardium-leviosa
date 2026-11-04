@@ -7,8 +7,8 @@ import de.emaarco.example.domain.OrderStatusChange
 import de.emaarco.podbroadcast.PodBroadcastPublisher
 import de.emaarco.podbroadcast.PodBroadcastReceiver
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.transformWhile
 import org.springframework.stereotype.Component
 import java.time.Instant
 
@@ -27,9 +27,17 @@ class OrderStatusBroadcastAdapter(
 
     override fun changesOf(orderId: OrderId) =
         receiver
-            .receive<OrderStatusChangeMessage>()
-            .filter { it.orderId == orderId.value }
-            .map { it.toDomain() }
+            .receive<OrderStatusChangeMessage>(key = orderId.value)
+            .mapNotNull { toDomainOrSkip(it) }
+            .transformWhile { change ->
+                emit(change)
+                !change.status.isFinal
+            }
+
+    private fun toDomainOrSkip(message: OrderStatusChangeMessage) =
+        runCatching { message.toDomain() }
+            .onFailure { log.warn(it) { "Skipping status ${message.status} of order ${message.orderId}" } }
+            .getOrNull()
 
     data class OrderStatusChangeMessage(
         val orderId: String,
