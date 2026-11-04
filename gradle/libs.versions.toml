@@ -21,12 +21,17 @@ webflux = { module = "org.springframework.boot:spring-boot-starter-webflux", ver
 aop = { module = "org.springframework.boot:spring-boot-starter-aspectj", version.ref = "spring_version" }
 actuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version.ref = "spring_version" }
 devtools = { module = "org.springframework.boot:spring-boot-devtools", version.ref = "spring_version" }
+kafka = { module = "org.springframework.boot:spring-boot-starter-kafka", version.ref = "spring_version" }
+websocket = { module = "org.springframework.boot:spring-boot-starter-websocket", version.ref = "spring_version" }
+jackson = { module = "org.springframework.boot:spring-boot-starter-jackson", version.ref = "spring_version" }
 spring_boot_bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring_version" }
 
 # Tests
 spring_test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "spring_version" }
 spring_graphql_test = { module = "org.springframework.graphql:spring-graphql-test", version.ref = "spring_graphql_test_version" }
 spring_boot_graphql_test = { module = "org.springframework.boot:spring-boot-graphql-test", version.ref = "spring_version" }
+spring_kafka_test = { module = "org.springframework.kafka:spring-kafka-test" }
+awaitility = { module = "org.awaitility:awaitility-kotlin" }
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito_version" }
 archunit = { module = "com.tngtech.archunit:archunit", version.ref = "archunit_version" }
 konsist = { module = "com.lemonappdev:konsist", version.ref = "konsist_version" }
@@ -36,6 +41,9 @@ spring_mockk = { module = "com.ninja-squad:springmockk", version.ref = "spring_m
 
 # Kotlin
 kotlin_logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin_logging_version" }
+kotlinx_coroutines_core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core" }
+kotlinx_coroutines_reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor" }
+jackson_kotlin = { module = "tools.jackson.module:jackson-module-kotlin" }
 
 # Mutation testing (pitest) — used only by the spring-for-graphql-fragment-source spike
 pitest_junit5 = { module = "org.pitest:pitest-junit5-plugin", version.ref = "pitest_junit5_version" }

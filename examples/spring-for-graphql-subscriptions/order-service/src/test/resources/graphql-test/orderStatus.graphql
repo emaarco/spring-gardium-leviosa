@@ -1,0 +1,8 @@
+subscription orderStatus($orderId: ID!) {
+    orderStatus(orderId: $orderId) {
+        orderId
+        status
+        changedAt
+        changedOnPod
+    }
+}
