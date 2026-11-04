@@ -1,0 +1,33 @@
+type Query {
+    pod: String!
+}
+
+type Mutation {
+    placeOrder(article: String!, quantity: Int!): Order!
+}
+
+type Subscription {
+    orderStatus(orderId: ID!): OrderStatusChange!
+}
+
+enum OrderStatus {
+    PLACED
+    PAYMENT_CONFIRMED
+    READY_TO_SHIP
+    SHIPPED
+}
+
+type Order {
+    id: ID!
+    article: String!
+    quantity: Int!
+    status: OrderStatus!
+    placedOnPod: String!
+}
+
+type OrderStatusChange {
+    orderId: ID!
+    status: OrderStatus!
+    changedAt: String!
+    changedOnPod: String!
+}

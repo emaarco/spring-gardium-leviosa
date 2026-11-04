@@ -1,0 +1,9 @@
+mutation placeOrder($article: String!, $quantity: Int!) {
+    placeOrder(article: $article, quantity: $quantity) {
+        id
+        article
+        quantity
+        status
+        placedOnPod
+    }
+}
